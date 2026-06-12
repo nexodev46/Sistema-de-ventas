@@ -283,7 +283,19 @@ export const Header = () => {
                   transition: 'all 0.2s ease',
                 }}
               >
-                <Box sx={{ p: theme.spacing(0, 2), height: '100%', position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box
+                  onClick={() => handleSearch(searchTerm)}
+                  title="Buscar"
+                  sx={{
+                    p: theme.spacing(0, 2),
+                    height: '100%',
+                    position: 'absolute',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
                   <SearchIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
                 </Box>
                 <InputBase
