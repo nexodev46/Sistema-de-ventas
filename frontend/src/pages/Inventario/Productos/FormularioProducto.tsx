@@ -5,8 +5,7 @@ import { Save, ArrowBack } from '@mui/icons-material'
 import { productoService } from '../../../services/productoService'
 import { categoriaService } from '../../../services/categoriaService'
 import { marcaService } from '../../../services/marcaService'
-import { firebaseStorageService } from '../../../services/firebaseStorageService'
-import { localImageService } from '../../../services/localImageService'
+import { cloudinaryService } from '../../../services/cloudinaryService'
 import { Categoria } from '../../../types/categoria.types'
 import { Marca } from '../../../types/marca.types'
 import { ProductoFormData } from '../../../types/producto.types'
@@ -82,17 +81,11 @@ export const FormularioProducto = () => {
     setFormData(prev => ({ ...prev, marca: value }))
   }
 
-  const uploadSelectedImages = async (productId: string, existingImages: string[] = []) => {
+  const uploadSelectedImages = async (_productId: string, existingImages: string[] = []) => {
     if (selectedFiles.length === 0) return existingImages
-    try {
-      // Prefer local server upload when available
-      const urls = await localImageService.uploadProductImages(productId, selectedFiles)
-      return [...existingImages, ...urls]
-    } catch (e) {
-      // Fallback to firebase if local upload fails
-      const urls = await firebaseStorageService.uploadProductImages(productId, selectedFiles)
-      return [...existingImages, ...urls]
-    }
+    console.log('Usando Cloudinary para subir imagen')
+    const urls = await cloudinaryService.uploadMultipleImages(selectedFiles)
+    return [...existingImages, ...urls]
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,8 +118,10 @@ export const FormularioProducto = () => {
         }
       }
       navigate('/productos')
-    } catch (e) {
-      setError('Error guardando')
+    } catch (error) {
+      console.error('Error guardando producto:', error)
+      const message = error instanceof Error ? error.message : 'Error guardando'
+      setError(message)
     } finally {
       setSaving(false)
     }
@@ -180,7 +175,7 @@ export const FormularioProducto = () => {
                     <img src={url} alt={`preview-${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </Box>
                 ))}
-                {previewUrls.length === 0 && formData.imagenes?.map((url, index) => (
+                {previewUrls.length === 0 && formData.imagenes?.filter((url) => !url.includes('localhost:4000') && !url.includes(':4000/uploads')).map((url, index) => (
                   <Box key={`existing-${index}`} sx={{ width: 84, height: 84, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
                     <img src={url} alt={`existing-${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </Box>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type MouseEvent } from 'react'
+import { useState, useEffect, useRef, type MouseEvent, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   AppBar,
@@ -61,6 +61,7 @@ export const Header = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
   const [notifications, setNotifications] = useState<Notificacion[]>([])
   const [animateBell, setAnimateBell] = useState(false)
   const [userPhotoURL, setUserPhotoURL] = useState<string | null>(null)
@@ -195,6 +196,22 @@ export const Header = () => {
     handleNotifClose()
   }
 
+  const handleSearch = (value: string) => {
+    const trimmed = value.trim()
+    if (!trimmed) return
+
+    navigate(`/buscar?q=${encodeURIComponent(trimmed)}`)
+    if (isMobile) {
+      setSearchOpen(false)
+    }
+  }
+
+  const handleSearchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleSearch(searchTerm)
+    }
+  }
+
   const handleNotificationClick = (notification: Notificacion) => {
     handleMarkAsRead(notification.id)
     handleNotifClose()
@@ -205,6 +222,7 @@ export const Header = () => {
 
 
   const getDisplayName = () => {
+
     if (!user?.nombre) return 'Admin'
     const parts = user.nombre.split(' ').filter(Boolean)
     return parts.slice(0, 2).join(' ')
@@ -269,6 +287,9 @@ export const Header = () => {
                   <SearchIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
                 </Box>
                 <InputBase
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  onKeyDown={handleSearchKeyDown}
                   placeholder="Buscar productos, ventas, clientes..."
                   sx={{ 
                     pl: 5, 
@@ -540,6 +561,9 @@ export const Header = () => {
         <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
           <InputBase
             fullWidth
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            onKeyDown={handleSearchKeyDown}
             placeholder="Buscar productos, ventas, clientes..."
             autoFocus
             sx={{

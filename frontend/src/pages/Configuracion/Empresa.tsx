@@ -54,8 +54,8 @@ import {
 } from '@mui/icons-material'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db, storage } from '../../services/firebase'
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import { localImageService } from '../../services/localImageService'
+import { ref, deleteObject } from 'firebase/storage'
+import { cloudinaryService } from '../../services/cloudinaryService'
 import { useSnackbar } from 'notistack'
 import { motion } from 'framer-motion'
 
@@ -148,8 +148,9 @@ export const Empresa = () => {
         setFormData(prev => ({
           ...prev,
           ...data,
+          logo: (data.logo as string) || (data.logoPreview as string) || prev.logo || '',
           logoPath: data.logoPath || prev.logoPath || '',
-          logoPreview: (data.logo as string) || prev.logoPreview || '',
+          logoPreview: (data.logoPreview as string) || (data.logo as string) || prev.logoPreview || '',
           redesSociales: {
             facebook: data.redesSociales?.facebook || prev.redesSociales.facebook || '',
             instagram: data.redesSociales?.instagram || prev.redesSociales.instagram || '',
@@ -211,17 +212,13 @@ export const Empresa = () => {
 
       // Primer intento: upload al servidor local para evitar CORS de Firebase en localhost
       try {
-        logoUrl = await localImageService.uploadBrandImage('empresa', file)
-      } catch (localError) {
-        console.warn('Carga local falló, intentando Firebase:', localError)
-
-        const storageRef = ref(storage, `empresa/logo_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_.-]/g, '_')}`)
-        await uploadBytes(storageRef, file, { contentType: file.type })
-        logoUrl = await getDownloadURL(storageRef)
-        logoPath = storageRef.fullPath
+        logoUrl = await cloudinaryService.uploadImage(file)
+      } catch (error) {
+        console.error('Error subiendo logo a Cloudinary:', error)
+        throw error
       }
 
-      // Eliminar logo anterior solo si tenemos una ruta válida en Firebase
+      // Si había un logo antiguo en Firebase, intenta eliminarlo.
       if (formData.logoPath) {
         try {
           const oldRef = ref(storage, formData.logoPath)
@@ -231,7 +228,15 @@ export const Empresa = () => {
         }
       }
 
-      setFormData(prev => ({ ...prev, logo: logoUrl, logoPath, logoPreview: logoUrl }))
+      const docRef = doc(db, 'configuracion', 'empresa')
+      await setDoc(docRef, {
+        logo: logoUrl,
+        logoPreview: logoUrl,
+        logoPath: '',
+        updatedAt: new Date().toISOString(),
+      }, { merge: true })
+
+      setFormData(prev => ({ ...prev, logo: logoUrl, logoPath: '', logoPreview: logoUrl }))
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('empresaLogoUpdated', { detail: { logo: logoUrl } }))
       }
@@ -252,6 +257,17 @@ export const Empresa = () => {
         await deleteObject(oldRef)
       } catch (e) { console.log('Error eliminando logo en Firebase', e) }
     }
+
+    const docRef = doc(db, 'configuracion', 'empresa')
+    try {
+      await setDoc(docRef, { logo: '', logoPreview: '', logoPath: '' }, { merge: true })
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('empresaLogoUpdated', { detail: { logo: '' } }))
+      }
+    } catch (error) {
+      console.error('Error eliminando logo en Firestore:', error)
+    }
+
     setFormData(prev => ({ ...prev, logo: '', logoPath: '', logoPreview: '' }))
     enqueueSnackbar('Logo eliminado', { variant: 'info' })
   }
@@ -372,7 +388,8 @@ export const Empresa = () => {
                 }}
               >
                 <Avatar
-                  src={formData.logoPreview}
+                  src={formData.logoPreview || formData.logo}
+                  imgProps={{ crossOrigin: 'anonymous' }}
                   sx={{
                     width: 120,
                     height: 120,

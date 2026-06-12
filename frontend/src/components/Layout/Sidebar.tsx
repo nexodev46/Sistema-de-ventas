@@ -53,6 +53,9 @@ interface SidebarProps {
   onMobileClose?: () => void
 }
 
+const LOGO_STORAGE_KEY = 'empresaLogoUrl'
+const COMPANY_NAME_STORAGE_KEY = 'empresaNombre'
+
 export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -65,17 +68,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
   const [companyName, setCompanyName] = useState<string | null>(null)
 
   useEffect(() => {
+    const localLogo = window.localStorage.getItem(LOGO_STORAGE_KEY)
+    const localName = window.localStorage.getItem(COMPANY_NAME_STORAGE_KEY)
+    if (localLogo) {
+      setCompanyLogo(localLogo)
+    }
+    if (localName) {
+      setCompanyName(localName)
+    }
+
     const loadCompanyData = async () => {
       try {
         const docRef = doc(db, 'configuracion', 'empresa')
         const docSnap = await getDoc(docRef)
         if (docSnap.exists()) {
-          const data = docSnap.data() as { logo?: string; nombre?: string }
-          if (data.logo) {
-            setCompanyLogo(data.logo)
+          const data = docSnap.data() as { logo?: string; logoPreview?: string; nombre?: string }
+          const logo = data.logo || data.logoPreview
+          if (logo) {
+            setCompanyLogo(logo)
+            window.localStorage.setItem(LOGO_STORAGE_KEY, logo)
           }
           if (data.nombre) {
             setCompanyName(data.nombre)
+            window.localStorage.setItem(COMPANY_NAME_STORAGE_KEY, data.nombre)
           }
         }
       } catch (error) {
@@ -89,9 +104,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
       const customEvent = event as CustomEvent<{ logo?: string; nombre?: string }>
       if (customEvent.detail?.logo) {
         setCompanyLogo(customEvent.detail.logo)
+        if (customEvent.detail.logo) {
+          window.localStorage.setItem(LOGO_STORAGE_KEY, customEvent.detail.logo)
+        } else {
+          window.localStorage.removeItem(LOGO_STORAGE_KEY)
+        }
       }
       if (customEvent.detail?.nombre) {
         setCompanyName(customEvent.detail.nombre)
+        window.localStorage.setItem(COMPANY_NAME_STORAGE_KEY, customEvent.detail.nombre)
       }
     }
 
@@ -99,6 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
       const customEvent = event as CustomEvent<{ nombre: string }>
       if (customEvent.detail?.nombre) {
         setCompanyName(customEvent.detail.nombre)
+        window.localStorage.setItem(COMPANY_NAME_STORAGE_KEY, customEvent.detail.nombre)
       }
     }
 

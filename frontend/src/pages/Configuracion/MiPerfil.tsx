@@ -51,7 +51,7 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { updateProfile, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { useSnackbar } from 'notistack'
 import { motion } from 'framer-motion'
-import { localImageService } from '../../services/localImageService'
+import { cloudinaryService } from '../../services/cloudinaryService'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -146,8 +146,7 @@ export const MiPerfil = () => {
 
     setUploading(true)
     try {
-      // Subir foto al servidor local
-      const url = await localImageService.uploadProfileImage(auth.currentUser?.uid || '', file)
+      const url = await cloudinaryService.uploadImage(file)
 
       // Actualizar en Firestore
       const userRef = doc(db, 'usuarios', auth.currentUser?.uid || '')

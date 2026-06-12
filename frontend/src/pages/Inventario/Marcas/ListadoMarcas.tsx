@@ -42,8 +42,7 @@ import {
   Business,
 } from '@mui/icons-material'
 import { marcaService } from '../../../services/marcaService'
-import { firebaseStorageService } from '../../../services/firebaseStorageService'
-import { localImageService } from '../../../services/localImageService'
+import { cloudinaryService } from '../../../services/cloudinaryService'
 import { Marca } from '../../../types/marca.types'
 import { motion } from 'framer-motion'
 
@@ -325,16 +324,8 @@ export const ListadoMarcas = () => {
       }
 
       if (selectedImage && marcaId) {
-        try {
-          const localUrl = await localImageService.uploadBrandImage(marcaId, selectedImage)
-          if (localUrl) {
-            await marcaService.update(marcaId, { imagenUrl: localUrl })
-          }
-        } catch (localError) {
-          console.warn('Local upload failed, falling back to Firebase:', localError)
-          const url = await firebaseStorageService.uploadBrandImage(marcaId, selectedImage)
-          await marcaService.update(marcaId, { imagenUrl: url })
-        }
+        const url = await cloudinaryService.uploadImage(selectedImage)
+        await marcaService.update(marcaId, { imagenUrl: url })
       }
 
       setOpenDialog(false)

@@ -41,6 +41,7 @@ import {
 } from '@mui/icons-material'
 import { productoService } from '../../../services/productoService'
 import { Producto } from '../../../types/producto.types'
+import { isValidImageUrl } from '../../../utils/validators'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -303,12 +304,13 @@ export const InventarioGeneral = () => {
                   <TableRow key={producto.id} hover>
                     <TableCell>
                       <Avatar
-                        src={producto.imagenes?.[0] ?? producto.imagenUrl}
+                        src={isValidImageUrl(producto.imagenes?.[0]) ? producto.imagenes?.[0] : isValidImageUrl(producto.imagenUrl) ? producto.imagenUrl : ''}
                         alt={producto.nombre}
                         variant="rounded"
+                        imgProps={{ crossOrigin: 'anonymous' }}
                         sx={{ width: 48, height: 48, bgcolor: alpha(theme.palette.primary.main, 0.1) }}
                       >
-                        {!producto.imagenes?.[0] && !producto.imagenUrl ? <ImageIcon fontSize="small" /> : null}
+                        {!isValidImageUrl(producto.imagenes?.[0]) && !isValidImageUrl(producto.imagenUrl) ? <ImageIcon fontSize="small" /> : null}
                       </Avatar>
                     </TableCell>
                     <TableCell>

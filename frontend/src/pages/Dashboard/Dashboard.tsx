@@ -26,6 +26,8 @@ import {
   Zoom,
   Select,
   MenuItem,
+  TextField,
+  InputAdornment,
 } from '@mui/material'
 import {
   TrendingUp,
@@ -48,6 +50,7 @@ import {
   AccessTime,
   Category,
   Star,
+  Search as SearchIcon,
 } from '@mui/icons-material'
 import { productoService } from '../../services/productoService'
 import { ventaService } from '../../services/ventaService'
@@ -180,6 +183,7 @@ export const Dashboard = () => {
   const [ultimasVentas, setUltimasVentas] = useState<any[]>([])
   const [productosBajoStockList, setProductosBajoStockList] = useState<Producto[]>([])
   const [actividades, setActividades] = useState<any[]>([])
+  const [dashboardSearch, setDashboardSearch] = useState('')
   const [stats, setStats] = useState({
     ventasHoy: 0, ventasMes: 0, ordenesHoy: 0, clientesNuevos: 0,
     productosBajoStock: 0, productosAgotados: 0, totalProductos: 0, totalClientes: 0,
@@ -393,6 +397,12 @@ export const Dashboard = () => {
     }
   }
 
+  const filterSection = (title: string) => {
+    const term = dashboardSearch.trim().toLowerCase()
+    if (!term) return true
+    return title.toLowerCase().includes(term)
+  }
+
   return (
     <Box>
       {/* Header con gradiente */}
@@ -449,6 +459,24 @@ export const Dashboard = () => {
         </Box>
       </Box>
 
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          size="small"
+          placeholder="Buscar gráficos del dashboard"
+          value={dashboardSearch}
+          onChange={(e) => setDashboardSearch(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
       {/* Fila 1: Tarjetas KPI */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}><StatCard title="Venta del día" value={stats.ventasHoy} prefix="S/ " icon={<AttachMoney />} color={theme.palette.success.main} loading={loading} /></Grid>
@@ -459,8 +487,9 @@ export const Dashboard = () => {
 
       {/* Fila 2: Gráficos principales */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={8}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+        {filterSection('Evolución de Ventas') && (
+          <Grid item xs={12} md={8}>
+            <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
             <CardContent>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 1, mb: 1 }}>
                 <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><TrendingUp /> Evolución de Ventas</Typography>
@@ -500,9 +529,11 @@ export const Dashboard = () => {
               }
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ borderRadius: 3, height: '100%', boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+          </Grid>
+        )}
+        {filterSection('Ventas por Hora') && (
+          <Grid item xs={12} md={4}>
+            <Card sx={{ borderRadius: 3, height: '100%', boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
             <CardContent>
               <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><AccessTime /> Ventas por Hora</Typography>
               <Divider sx={{ mb: 2 }} />
@@ -521,140 +552,154 @@ export const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
+        )}
       </Grid>
 
       {/* Fila 3: Métodos de pago + Productos por categoría */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Store /> Métodos de Pago</Typography>
-              <Divider sx={{ mb: 2 }} />
-              {loading ? <Box sx={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
-                ventasPorMetodo.length === 0 ? <Box sx={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant="body2" color="text.secondary">No hay datos</Typography></Box> :
-                <>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <PieChart>
-                      <Pie data={ventasPorMetodo} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" label={({ percent }) => `${(percent * 100).toFixed(0)}%`}>
-                        {ventasPorMetodo.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.color} />)}
-                      </Pie>
-                      <RechartsTooltip formatter={(v: number) => [`S/ ${v.toLocaleString()}`, 'Monto']} />
-                    </PieChart>
+        {filterSection('Métodos de Pago') && (
+          <Grid item xs={12} md={6}>
+            <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Store /> Métodos de Pago</Typography>
+                <Divider sx={{ mb: 2 }} />
+                {loading ? <Box sx={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
+                  ventasPorMetodo.length === 0 ? <Box sx={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant="body2" color="text.secondary">No hay datos</Typography></Box> :
+                  <>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <PieChart>
+                        <Pie data={ventasPorMetodo} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" label={({ percent }) => `${(percent * 100).toFixed(0)}%`}>
+                          {ventasPorMetodo.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.color} />)}
+                        </Pie>
+                        <RechartsTooltip formatter={(v: number) => [`S/ ${v.toLocaleString()}`, 'Monto']} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+                      {ventasPorMetodo.map(m => <Chip key={m.name} label={m.name} size="small" sx={{ bgcolor: alpha(m.color, 0.1), color: m.color }} />)}
+                    </Box>
+                  </>
+                }
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+        {filterSection('Productos por Categoría') && (
+          <Grid item xs={12} md={6}>
+            <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Category /> Productos por Categoría</Typography>
+                <Divider sx={{ mb: 2 }} />
+                {loading ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
+                  productosPorCategoria.length === 0 ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant="body2" color="text.secondary">No hay categorías</Typography></Box> :
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={productosPorCategoria} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.5)} />
+                      <XAxis type="number" stroke={theme.palette.text.secondary} fontSize={12} />
+                      <YAxis type="category" dataKey="name" stroke={theme.palette.text.secondary} fontSize={12} width={100} />
+                      <RechartsTooltip formatter={(v: number) => [`${v} productos`, 'Cantidad']} />
+                      <Bar dataKey="value" fill={theme.palette.primary.main} radius={[0, 4, 4, 0]} />
+                    </BarChart>
                   </ResponsiveContainer>
-                  <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
-                    {ventasPorMetodo.map(m => <Chip key={m.name} label={m.name} size="small" sx={{ bgcolor: alpha(m.color, 0.1), color: m.color }} />)}
-                  </Box>
-                </>
-              }
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Category /> Productos por Categoría</Typography>
-              <Divider sx={{ mb: 2 }} />
-              {loading ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
-                productosPorCategoria.length === 0 ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant="body2" color="text.secondary">No hay categorías</Typography></Box> :
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={productosPorCategoria} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.5)} />
-                    <XAxis type="number" stroke={theme.palette.text.secondary} fontSize={12} />
-                    <YAxis type="category" dataKey="name" stroke={theme.palette.text.secondary} fontSize={12} width={100} />
-                    <RechartsTooltip formatter={(v: number) => [`${v} productos`, 'Cantidad']} />
-                    <Bar dataKey="value" fill={theme.palette.primary.main} radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              }
-            </CardContent>
-          </Card>
-        </Grid>
+                }
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
       </Grid>
 
       {/* Fila 4: Ventas por semana + Clientes por mes */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><TrendingUp /> Ventas por Semana del Mes</Typography>
-              <Divider sx={{ mb: 2 }} />
-              {loading ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
-                ventasPorSemana.length === 0 ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant="body2" color="text.secondary">Sin datos</Typography></Box> :
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={ventasPorSemana}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.5)} />
-                    <XAxis dataKey="semana" stroke={theme.palette.text.secondary} fontSize={12} />
-                    <YAxis tickFormatter={(v) => `S/ ${v}`} stroke={theme.palette.text.secondary} fontSize={12} />
-                    <RechartsTooltip formatter={(v: number) => [`S/ ${v.toLocaleString()}`, 'Ventas']} />
-                    <Bar dataKey="total" fill={theme.palette.warning.main} radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              }
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><People /> Clientes Nuevos por Mes</Typography>
-              <Divider sx={{ mb: 2 }} />
-              {loading ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={clientesPorMes}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.5)} />
-                    <XAxis dataKey="mes" stroke={theme.palette.text.secondary} fontSize={12} />
-                    <YAxis stroke={theme.palette.text.secondary} fontSize={12} />
-                    <RechartsTooltip formatter={(v: number) => [`${v} clientes`, 'Nuevos']} />
-                    <Line type="monotone" dataKey="clientes" stroke={theme.palette.info.main} strokeWidth={2} dot={{ fill: theme.palette.info.main, r: 4 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              }
-            </CardContent>
-          </Card>
-        </Grid>
+        {filterSection('Ventas por Semana del Mes') && (
+          <Grid item xs={12} md={6}>
+            <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><TrendingUp /> Ventas por Semana del Mes</Typography>
+                <Divider sx={{ mb: 2 }} />
+                {loading ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
+                  ventasPorSemana.length === 0 ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant="body2" color="text.secondary">Sin datos</Typography></Box> :
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={ventasPorSemana}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.5)} />
+                      <XAxis dataKey="semana" stroke={theme.palette.text.secondary} fontSize={12} />
+                      <YAxis tickFormatter={(v) => `S/ ${v}`} stroke={theme.palette.text.secondary} fontSize={12} />
+                      <RechartsTooltip formatter={(v: number) => [`S/ ${v.toLocaleString()}`, 'Ventas']} />
+                      <Bar dataKey="total" fill={theme.palette.warning.main} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                }
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+        {filterSection('Clientes Nuevos por Mes') && (
+          <Grid item xs={12} md={6}>
+            <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><People /> Clientes Nuevos por Mes</Typography>
+                <Divider sx={{ mb: 2 }} />
+                {loading ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
+                  <ResponsiveContainer width="100%" height={280}>
+                    <LineChart data={clientesPorMes}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.5)} />
+                      <XAxis dataKey="mes" stroke={theme.palette.text.secondary} fontSize={12} />
+                      <YAxis stroke={theme.palette.text.secondary} fontSize={12} />
+                      <RechartsTooltip formatter={(v: number) => [`${v} clientes`, 'Nuevos']} />
+                      <Line type="monotone" dataKey="clientes" stroke={theme.palette.info.main} strokeWidth={2} dot={{ fill: theme.palette.info.main, r: 4 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                }
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
       </Grid>
 
       {/* Fila 5: Clientes por mes + Actividades */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><People /> Clientes: Nuevos vs Recurrentes</Typography>
-              <Divider sx={{ mb: 2 }} />
-              {loading ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
-                <ResponsiveContainer width="100%" height={280}>
-                  <PieChart>
-                    <Pie data={tendenciaClientes} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                      {tendenciaClientes.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.color} />)}
-                    </Pie>
-                    <Legend />
-                    <RechartsTooltip formatter={(v: number) => [`${v} clientes`, 'Cantidad']} />
-                  </PieChart>
-                </ResponsiveContainer>
-              }
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Schedule /> Actividades Recientes</Typography>
-              <Divider sx={{ mb: 2 }} />
-              {loading ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
-                actividades.length === 0 ? <Box sx={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant="body2" color="text.secondary">No hay actividades recientes</Typography></Box> :
-                actividades.map(a => <ActivityItem key={a.id} icon={a.icon} title={a.title} description={a.description} time={a.time} color={a.color} />)
-              }
-            </CardContent>
-          </Card>
-        </Grid>
+        {filterSection('Clientes: Nuevos vs Recurrentes') && (
+          <Grid item xs={12} md={6}>
+            <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><People /> Clientes: Nuevos vs Recurrentes</Typography>
+                <Divider sx={{ mb: 2 }} />
+                {loading ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
+                  <ResponsiveContainer width="100%" height={280}>
+                    <PieChart>
+                      <Pie data={tendenciaClientes} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                        {tendenciaClientes.map((entry, idx) => <Cell key={`cell-${idx}`} fill={entry.color} />)}
+                      </Pie>
+                      <Legend />
+                      <RechartsTooltip formatter={(v: number) => [`${v} clientes`, 'Cantidad']} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                }
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+        {filterSection('Actividades Recientes') && (
+          <Grid item xs={12} md={6}>
+            <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Schedule /> Actividades Recientes</Typography>
+                <Divider sx={{ mb: 2 }} />
+                {loading ? <Box sx={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
+                  actividades.length === 0 ? <Box sx={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant="body2" color="text.secondary">No hay actividades recientes</Typography></Box> :
+                  actividades.map(a => <ActivityItem key={a.id} icon={a.icon} title={a.title} description={a.description} time={a.time} color={a.color} />)
+                }
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
       </Grid>
 
       {/* Fila 6: Top productos + Stock bajo */}
       <Grid container spacing={2} sx={{ mb: 1.5 }}>
-        <Grid item xs={12} md={6}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Star /> Top 5 Productos Más Vendidos</Typography>
+        {filterSection('Top 5 Productos Más Vendidos') && (
+          <Grid item xs={12} md={6}>
+            <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Star /> Top 5 Productos Más Vendidos</Typography>
               <Divider sx={{ mb: 2 }} />
               {loading ? <Box sx={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box> :
                 topProductos.length === 0 ? <Box sx={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Typography variant="body2" color="text.secondary">No hay productos</Typography></Box> :
@@ -676,6 +721,7 @@ export const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
+        )}
         <Grid item xs={12} md={6}>
           <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
             <CardContent>
@@ -697,8 +743,9 @@ export const Dashboard = () => {
 
       {/* Fila 7: Últimas ventas */}
       <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+        {filterSection('Últimas Ventas') && (
+          <Grid item xs={12}>
+            <Card sx={{ borderRadius: 3, boxShadow: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
             <CardContent>
               <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Receipt /> Últimas Ventas</Typography>
               <Divider sx={{ mb: 2 }} />
@@ -710,6 +757,7 @@ export const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
+        )}
       </Grid>
     </Box>
   )

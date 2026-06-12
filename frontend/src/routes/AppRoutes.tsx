@@ -32,6 +32,7 @@ import { ReporteClientes } from '../pages/Reportes/ReporteClientes'
 import { PuntoVenta } from '../pages/PuntoVenta/PuntoVenta'
 import { ListadoVentas } from '../pages/Ventas/ListadoVentas'
 import { DetalleVenta } from '../pages/Ventas/DetalleVenta'
+import { Buscar } from '../pages/Buscar/Buscar'
 
 export const AppRoutes = () => {
   return (
@@ -45,6 +46,7 @@ export const AppRoutes = () => {
       <Route element={<PrivateRoute />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/buscar" element={<Buscar />} />
         
         {/* Productos */}
         <Route path="/productos" element={<ListadoProductos />} />

@@ -62,6 +62,7 @@ import { ventaService } from '../../services/ventaService'
 import { useAuth } from '../../contexts/AuthContext'
 import { Producto } from '../../types/producto.types'
 import { Cliente } from '../../types/cliente.types'
+import { isValidImageUrl } from '../../utils/validators'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface ProductoVenta {
@@ -349,8 +350,9 @@ export const PuntoVenta = () => {
                         )}
                         <CardMedia
                           component="img"
-                          image={producto.imagenes?.[0] || 'https://via.placeholder.com/200x120?text=Producto'}
+                          image={isValidImageUrl(producto.imagenes?.[0]) ? producto.imagenes?.[0] : 'https://via.placeholder.com/200x120?text=Producto'}
                           alt={producto.nombre}
+                          crossOrigin="anonymous"
                           sx={{
                             width: '100%',
                             height: 'auto',

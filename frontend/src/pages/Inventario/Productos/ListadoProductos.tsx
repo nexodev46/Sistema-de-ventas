@@ -44,6 +44,7 @@ import { Producto } from '../../../types/producto.types'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { SkeletonProductCardGrid } from '../../../components/Common/SkeletonProductCard'
+import { isValidImageUrl } from '../../../utils/validators'
 
 // Componente de tarjeta de producto animada
 const ProductCard = ({ producto, onEdit, onDelete, onView }: any) => {
@@ -64,7 +65,11 @@ const ProductCard = ({ producto, onEdit, onDelete, onView }: any) => {
     return 'En stock'
   }
 
-  const imageUrl = producto.imagenes?.[0] ?? producto.imagenUrl
+  const imageUrl = isValidImageUrl(producto.imagenes?.[0])
+    ? producto.imagenes?.[0]
+    : isValidImageUrl(producto.imagenUrl)
+    ? producto.imagenUrl
+    : ''
 
   return (
     <Grid item xs={12} sm={6} md={4} lg={3}>
