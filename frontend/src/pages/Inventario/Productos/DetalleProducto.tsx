@@ -70,6 +70,10 @@ export const DetalleProducto = () => {
             <Typography variant="h4" fontWeight="bold" gutterBottom>
               {producto.nombre}
             </Typography>
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+              {producto.oferta && <Chip label="Oferta" color="secondary" size="small" />}
+              {producto.destacado && <Chip label="Destacado" color="warning" size="small" />}
+            </Stack>
             <Typography variant="body1" color="text.secondary">
               Visualiza la información completa de este producto y sus imágenes.
             </Typography>

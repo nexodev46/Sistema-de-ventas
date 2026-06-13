@@ -11,6 +11,8 @@ export interface Producto {
   marca: string
   imagenUrl?: string
   imagenes?: string[]
+  oferta?: boolean
+  destacado?: boolean
   activo: boolean
   creadoEn: string
   actualizadoEn: string
@@ -28,6 +30,8 @@ export interface ProductoFormData {
   marca: string
   imagenUrl?: string
   imagenes?: string[]
+  oferta?: boolean
+  destacado?: boolean
 }
 
 export interface MovimientoInventario {

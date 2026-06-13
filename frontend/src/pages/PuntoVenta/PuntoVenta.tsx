@@ -130,6 +130,12 @@ export const PuntoVenta = () => {
     )
   }, [searchTerm, productos])
 
+  const displayedProductos = filteredProductos.filter((producto) => {
+    if (tabValue === 1) return producto.destacado
+    if (tabValue === 2) return producto.oferta
+    return true
+  })
+
   const agregarAlCarrito = (producto: Producto) => {
     const existing = carrito.find(p => p.id === producto.id)
     const cantidadNueva = selectedProducto ? cantidad : 1
@@ -323,7 +329,7 @@ export const PuntoVenta = () => {
 
             <Box sx={{ p: 2, maxHeight: 'calc(100vh - 350px)', overflowY: 'auto' }}>
               <Grid container spacing={2}>
-                {filteredProductos.map((producto, idx) => (
+                {displayedProductos.map((producto, idx) => (
                   <Grid item xs={12} sm={6} md={4} key={producto.id}>
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}

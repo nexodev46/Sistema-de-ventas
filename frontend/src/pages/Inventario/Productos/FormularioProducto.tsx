@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Box, Typography, Paper, TextField, Button, Grid, Alert, CircularProgress, Divider, InputAdornment, Autocomplete } from '@mui/material'
+import { Box, Typography, Paper, TextField, Button, Grid, Alert, CircularProgress, Divider, InputAdornment, Autocomplete, Checkbox, FormControlLabel } from '@mui/material'
 import { Save, ArrowBack } from '@mui/icons-material'
 import { productoService } from '../../../services/productoService'
 import { categoriaService } from '../../../services/categoriaService'
@@ -10,7 +10,7 @@ import { Categoria } from '../../../types/categoria.types'
 import { Marca } from '../../../types/marca.types'
 import { ProductoFormData } from '../../../types/producto.types'
 
-const initialData: ProductoFormData = { codigo: '', nombre: '', descripcion: '', precioCompra: 0, precioVenta: 0, stockActual: 0, stockMinimo: 5, categoria: '', marca: '', imagenUrl: '', imagenes: [] }
+const initialData: ProductoFormData = { codigo: '', nombre: '', descripcion: '', precioCompra: 0, precioVenta: 0, stockActual: 0, stockMinimo: 5, categoria: '', marca: '', imagenUrl: '', imagenes: [], oferta: false, destacado: false }
 
 export const FormularioProducto = () => {
   const navigate = useNavigate()
@@ -68,6 +68,8 @@ export const FormularioProducto = () => {
         marca: p.marca,
         imagenUrl: p.imagenUrl || '',
         imagenes: p.imagenes || [],
+        oferta: p.oferta || false,
+        destacado: p.destacado || false,
       })
     } catch (e) {
       setError('Error cargando')
@@ -106,6 +108,8 @@ export const FormularioProducto = () => {
           ...formData,
           imagenes: uploadedImages,
           imagenUrl: uploadedImages[0] || formData.imagenUrl,
+          oferta: formData.oferta,
+          destacado: formData.destacado,
         })
       } else {
         const newId = await productoService.create(formData)
@@ -158,6 +162,32 @@ export const FormularioProducto = () => {
                 />
               )}
             />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: { xs: 0, md: 1 } }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.oferta || false}
+                    onChange={(e) => setFormData(prev => ({ ...prev, oferta: e.target.checked }))}
+                    name="oferta"
+                    color="primary"
+                  />
+                }
+                label="Producto en oferta"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.destacado || false}
+                    onChange={(e) => setFormData(prev => ({ ...prev, destacado: e.target.checked }))}
+                    name="destacado"
+                    color="primary"
+                  />
+                }
+                label="Producto destacado"
+              />
+            </Box>
           </Grid>
           <Grid item xs={12} md={6}>
             <Button variant="outlined" component="label" fullWidth>

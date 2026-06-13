@@ -97,6 +97,24 @@ const ProductCard = ({ producto, onEdit, onDelete, onView }: any) => {
           onMouseLeave={() => setElevation(1)}
         >
           {/* Badge de stock */}
+          <Box sx={{ position: 'absolute', top: 12, left: 12, zIndex: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+            {producto.oferta && (
+              <Chip
+                label="Oferta"
+                size="small"
+                color="secondary"
+                sx={{ fontWeight: 'bold', bgcolor: alpha(theme.palette.secondary.main, 0.2) }}
+              />
+            )}
+            {producto.destacado && (
+              <Chip
+                label="Destacado"
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 'bold', color: theme.palette.warning.main, borderColor: alpha(theme.palette.warning.main, 0.4), bgcolor: alpha(theme.palette.warning.light, 0.15) }}
+              />
+            )}
+          </Box>
           <Chip
             label={getStockText()}
             size="small"
