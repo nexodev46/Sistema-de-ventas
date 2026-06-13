@@ -256,12 +256,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
             sx={{
               width: collapsed && !isMobile ? 30 : 48,
               height: collapsed && !isMobile ? 30 : 48,
-              borderRadius: 2,
-              bgcolor: alpha(theme.palette.primary.main, 0.08),
+              borderRadius: 3,
+              bgcolor: alpha(theme.palette.primary.main, 0.12),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               p: 0.5,
+              border: `1.5px solid ${alpha(theme.palette.primary.main, 0.7)}`,
+              boxShadow: '0 12px 30px rgba(0, 0, 0, 0.12)',
             }}
           >
             <Box

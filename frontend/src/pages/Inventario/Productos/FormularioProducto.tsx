@@ -171,13 +171,13 @@ export const FormularioProducto = () => {
             {(previewUrls.length > 0 || (formData.imagenes && formData.imagenes.length > 0)) && (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
                 {previewUrls.map((url, index) => (
-                  <Box key={index} sx={{ width: 84, height: 84, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-                    <img src={url} alt={`preview-${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <Box key={index} sx={{ width: 84, height: 84, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
+                    <img src={url} alt={`preview-${index}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   </Box>
                 ))}
                 {previewUrls.length === 0 && formData.imagenes?.filter((url) => !url.includes('localhost:4000') && !url.includes(':4000/uploads')).map((url, index) => (
-                  <Box key={`existing-${index}`} sx={{ width: 84, height: 84, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-                    <img src={url} alt={`existing-${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <Box key={`existing-${index}`} sx={{ width: 84, height: 84, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
+                    <img src={url} alt={`existing-${index}`} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   </Box>
                 ))}
               </Box>

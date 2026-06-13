@@ -6,6 +6,7 @@ import { AdminSetup } from '../pages/AdminSetup/AdminSetup'
 import { Dashboard } from '../pages/Dashboard/Dashboard'
 import { ListadoProductos } from '../pages/Inventario/Productos/ListadoProductos'
 import { FormularioProducto } from '../pages/Inventario/Productos/FormularioProducto'
+import { DetalleProducto } from '../pages/Inventario/Productos/DetalleProducto'
 import { ListadoClientes } from '../pages/Clientes/ListadoClientes'
 import { FormularioCliente } from '../pages/Clientes/FormularioCliente'
 import { Configuracion } from '../pages/Configuracion/Configuracion'
@@ -55,6 +56,7 @@ export const AppRoutes = () => {
         <Route path="/inventario" element={<InventarioGeneral />} />
         <Route path="/productos/nuevo" element={<FormularioProducto />} />
         <Route path="/productos/editar/:id" element={<FormularioProducto />} />
+        <Route path="/productos/:id" element={<DetalleProducto />} />
         <Route path="/clientes" element={<ListadoClientes />} />
         <Route path="/clientes/nuevo" element={<FormularioCliente />} />
         <Route path="/clientes/editar/:id" element={<FormularioCliente />} />
