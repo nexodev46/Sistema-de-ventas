@@ -133,6 +133,7 @@ export const ListadoDevoluciones = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [devolucionToDelete, setDevolucionToDelete] = useState<Devolucion | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [approving, setApproving] = useState(false)
   const [filtroEstado, setFiltroEstado] = useState('')
   const [stats, setStats] = useState({
     total: 0,
@@ -140,6 +141,8 @@ export const ListadoDevoluciones = () => {
     pendientes: 0,
     completadas: 0,
   })
+  const [detalleOpen, setDetalleOpen] = useState(false)
+  const [selectedDevolucion, setSelectedDevolucion] = useState<Devolucion | null>(null)
 
   useEffect(() => {
     cargarDevoluciones()
@@ -207,7 +210,38 @@ export const ListadoDevoluciones = () => {
     setPage(0)
   }
 
-  const handleView = (id: string) => navigate(`/devoluciones/${id}`)
+  const handleOpenDetalle = (devolucion: Devolucion) => {
+    setSelectedDevolucion(devolucion)
+    setDetalleOpen(true)
+  }
+
+  const handleCloseDetalle = () => {
+    setSelectedDevolucion(null)
+    setDetalleOpen(false)
+  }
+
+  const handleApprove = async (devolucion: Devolucion) => {
+    setApproving(true)
+    try {
+      await devolucionService.updateEstado(devolucion.id, 'APROBADA')
+      await cargarDevoluciones()
+      if (selectedDevolucion?.id === devolucion.id) {
+        setSelectedDevolucion({ ...devolucion, estado: 'APROBADA' })
+      }
+    } catch (error) {
+      console.error('Error aprobando devolución:', error)
+      alert('No se pudo aprobar la devolución. Intenta de nuevo.')
+    } finally {
+      setApproving(false)
+    }
+  }
+
+  const handleClearFilters = () => {
+    setSearch('')
+    setFiltroEstado('')
+    setTabValue(0)
+    setPage(0)
+  }
 
   const handleDelete = (devolucion: Devolucion) => {
     setDevolucionToDelete(devolucion)
@@ -331,6 +365,7 @@ export const ListadoDevoluciones = () => {
           {tabValue !== 0 && <Chip label={tabValue === 1 ? 'Hoy' : 'Este mes'} size="small" onDelete={() => setTabValue(0)} />}
           {filtroEstado && <Chip label={`Estado: ${getEstadoLabel(filtroEstado)}`} size="small" onDelete={() => setFiltroEstado('')} />}
           {search && <Chip label={`Búsqueda: ${search}`} size="small" onDelete={() => setSearch('')} />}
+          <Button size="small" onClick={handleClearFilters}>Limpiar filtros</Button>
         </Box>
       )}
 
@@ -409,8 +444,20 @@ export const ListadoDevoluciones = () => {
                     </TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                        {devolucion.estado === 'PENDIENTE' && (
+                          <Tooltip title="Aprobar devolución">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleApprove(devolucion)}
+                              disabled={approving}
+                              sx={{ bgcolor: alpha(theme.palette.success.main, 0.08), color: theme.palette.success.dark }}
+                            >
+                              <CheckCircle fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                         <Tooltip title="Ver detalles">
-                          <IconButton size="small" onClick={() => handleView(devolucion.id)}>
+                          <IconButton size="small" onClick={() => handleOpenDetalle(devolucion)} sx={{ bgcolor: alpha(theme.palette.primary.main, 0.08) }}>
                             <Visibility fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -457,6 +504,111 @@ export const ListadoDevoluciones = () => {
           <Button variant="contained" color="error" onClick={handleConfirmDelete} disabled={deleting}>
             {deleting ? 'Eliminando...' : 'Eliminar'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={detalleOpen} onClose={handleCloseDetalle} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ bgcolor: alpha(theme.palette.primary.main, 0.08), color: theme.palette.primary.dark, fontWeight: 'bold' }}>
+          Detalles de devolución
+        </DialogTitle>
+        <DialogContent dividers sx={{ background: alpha(theme.palette.primary.main, 0.04) }}>
+          <Box sx={{ display: 'grid', gap: 2, mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">N° Devolución</Typography>
+                <Typography variant="h6" fontWeight="bold">{selectedDevolucion?.numero}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">Fecha / Hora</Typography>
+                <Typography variant="body1">{selectedDevolucion?.fecha} · {selectedDevolucion?.hora}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">Estado</Typography>
+                <Chip
+                  label={getEstadoLabel(selectedDevolucion?.estado || '')}
+                  color={getEstadoColor(selectedDevolucion?.estado || '') as any}
+                  size="small"
+                  icon={selectedDevolucion ? getEstadoIcono(selectedDevolucion.estado) : undefined}
+                />
+              </Box>
+            </Box>
+            <Divider />
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography variant="subtitle2" color="text.secondary">Cliente</Typography>
+                <Typography variant="body1" fontWeight="medium">{selectedDevolucion?.cliente.nombre}</Typography>
+                <Typography variant="caption" color="text.secondary">{selectedDevolucion?.cliente.documento}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography variant="subtitle2" color="text.secondary">Venta original</Typography>
+                <Typography variant="body1" fontWeight="medium">{selectedDevolucion?.ventaOriginal.numero}</Typography>
+                <Typography variant="caption" color="text.secondary">{selectedDevolucion?.ventaOriginal.fecha}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography variant="subtitle2" color="text.secondary">Reembolso</Typography>
+                <Typography variant="h6" fontWeight="bold">S/ {selectedDevolucion?.subtotal.toFixed(2)}</Typography>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>Productos devueltos</Typography>
+            <Table size="small" sx={{ background: 'white', borderRadius: 2 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Producto</TableCell>
+                  <TableCell align="center">Cant.</TableCell>
+                  <TableCell align="right">Precio</TableCell>
+                  <TableCell align="right">Subtotal</TableCell>
+                  <TableCell>Motivo</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {selectedDevolucion?.productos?.map((item) => (
+                  <TableRow key={item.id} hover>
+                    <TableCell>{item.nombre}</TableCell>
+                    <TableCell align="center">{item.cantidad}</TableCell>
+                    <TableCell align="right">S/ {item.precio.toFixed(2)}</TableCell>
+                    <TableCell align="right">S/ {item.subtotal.toFixed(2)}</TableCell>
+                    <TableCell>{item.motivo}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle2" color="text.secondary">Motivo general</Typography>
+              <Typography variant="body1">{selectedDevolucion?.motivoGeneral || 'Sin información'}</Typography>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle2" color="text.secondary">Observaciones</Typography>
+              <Typography variant="body1">{selectedDevolucion?.observaciones || 'Sin observaciones'}</Typography>
+            </Grid>
+          </Grid>
+
+          <Box sx={{ mt: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <Chip label={`Tipo: ${selectedDevolucion?.tipoDevolucion}`} color="primary" />
+            <Chip label={`Reembolso: ${selectedDevolucion?.metodoReembolso}`} color="secondary" />
+            <Chip label={`Creado por: ${selectedDevolucion?.creadoPor.nombre}`} />
+            <Chip label={`Creado en: ${selectedDevolucion?.creadoEn}`} />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
+          <Button onClick={handleCloseDetalle}>Cerrar</Button>
+          {selectedDevolucion?.estado === 'PENDIENTE' && (
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => selectedDevolucion && handleApprove(selectedDevolucion)}
+              disabled={approving}
+            >
+              {approving ? 'Aprobando...' : 'Aprobar'
+              }
+            </Button>
+          )}
+          <Button variant="contained" color="primary" onClick={handleCloseDetalle}>Aceptar</Button>
         </DialogActions>
       </Dialog>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import {
   Container,
@@ -49,18 +49,68 @@ export const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
+  const [honeypot, setHoneypot] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [failedAttempts, setFailedAttempts] = useState<number>(() => Number(sessionStorage.getItem('loginFailedAttempts') || '0'))
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(() => {
+    const value = sessionStorage.getItem('loginLockoutUntil')
+    return value ? Number(value) : null
+  })
+
+  const MAX_FAILED_ATTEMPTS = 5
+  const LOCKOUT_DURATION_MS = 30_000
+  const isLockedOut = lockoutUntil !== null && lockoutUntil > Date.now()
+
+  useEffect(() => {
+    if (!lockoutUntil) return
+    const interval = window.setInterval(() => {
+      if (Date.now() >= lockoutUntil) {
+        setLockoutUntil(null)
+        setFailedAttempts(0)
+        sessionStorage.removeItem('loginFailedAttempts')
+        sessionStorage.removeItem('loginLockoutUntil')
+      }
+    }, 1000)
+    return () => window.clearInterval(interval)
+  }, [lockoutUntil])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (honeypot) {
+      setError('Formulario inválido')
+      return
+    }
+
+    if (isLockedOut) {
+      setError(getLockoutMessage() || 'Demasiados intentos. Intenta de nuevo más tarde.')
+      return
+    }
+
     setError('')
     setLoading(true)
     try {
-      await login(email, password)
+      await login(email, password, rememberMe)
+      setFailedAttempts(0)
+      setLockoutUntil(null)
+      sessionStorage.removeItem('loginFailedAttempts')
+      sessionStorage.removeItem('loginLockoutUntil')
       navigate('/dashboard')
-    } catch {
-      setError('Correo o contraseña incorrectos')
+    } catch (error: any) {
+      const nextAttempts = failedAttempts + 1
+      setFailedAttempts(nextAttempts)
+      sessionStorage.setItem('loginFailedAttempts', String(nextAttempts))
+
+      if (nextAttempts >= MAX_FAILED_ATTEMPTS) {
+        const unlockAt = Date.now() + LOCKOUT_DURATION_MS
+        setLockoutUntil(unlockAt)
+        sessionStorage.setItem('loginLockoutUntil', String(unlockAt))
+        setError('Demasiados intentos. Intenta de nuevo en 30 segundos.')
+      } else {
+        setError('Correo o contraseña incorrectos')
+      }
+
+      console.error('Login failed:', error)
     } finally {
       setLoading(false)
     }
@@ -74,6 +124,7 @@ export const Login = () => {
       navigate('/dashboard')
     } catch (error: any) {
       setError(error.message || 'Error al iniciar sesión con Google')
+      console.error('Google login failed:', error)
     } finally {
       setLoading(false)
     }
@@ -87,9 +138,16 @@ export const Login = () => {
       navigate('/dashboard')
     } catch (error: any) {
       setError(error.message || 'Error al iniciar sesión con Facebook')
+      console.error('Facebook login failed:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const getLockoutMessage = () => {
+    if (!isLockedOut || !lockoutUntil) return null
+    const secondsLeft = Math.ceil((lockoutUntil - Date.now()) / 1000)
+    return `Demasiados intentos. Intenta de nuevo en ${secondsLeft} segundos.`
   }
 
   const features = [
@@ -145,12 +203,12 @@ export const Login = () => {
           <Paper
             elevation={24}
             sx={{
-                borderRadius: 5,
-                overflow: 'hidden',
-                bgcolor: alpha(theme.palette.background.paper, 0.95),
-                position: 'relative',
-                zIndex: 2,
-              }}
+              borderRadius: 5,
+              overflow: 'hidden',
+              bgcolor: alpha(theme.palette.background.paper, 0.95),
+              position: 'relative',
+              zIndex: 2,
+            }}
           >
             <Grid container sx={{ position: 'relative', zIndex: 2 }}>
               {/* Columna izquierda - Información premium */}
@@ -283,8 +341,22 @@ export const Login = () => {
                     {error}
                   </Alert>
                 )}
+                {isLockedOut && !error && (
+                  <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
+                    {getLockoutMessage()}
+                  </Alert>
+                )}
 
                 <form onSubmit={handleSubmit}>
+                  <input
+                    type="text"
+                    name="hp"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    autoComplete="off"
+                    style={{ display: 'none' }}
+                    aria-hidden="true"
+                  />
                   <TextField
                     fullWidth
                     label="Correo electrónico"
@@ -357,7 +429,7 @@ export const Login = () => {
                     fullWidth
                     variant="contained"
                     size="large"
-                    disabled={loading}
+                    disabled={loading || isLockedOut}
                     sx={{
                       py: 1.5,
                       borderRadius: 2,
@@ -391,7 +463,7 @@ export const Login = () => {
                       fullWidth
                       variant="outlined"
                       startIcon={<Google />}
-                      disabled={loading}
+                      disabled={loading || isLockedOut}
                       sx={{ borderRadius: 2, py: 1 }}
                       onClick={handleGoogleLogin}
                     >
@@ -401,7 +473,7 @@ export const Login = () => {
                       fullWidth
                       variant="outlined"
                       startIcon={<Facebook />}
-                      disabled={loading}
+                      disabled={loading || isLockedOut}
                       sx={{ borderRadius: 2, py: 1 }}
                       onClick={handleFacebookLogin}
                     >

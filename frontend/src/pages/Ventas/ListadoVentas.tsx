@@ -156,6 +156,8 @@ export const ListadoVentas = () => {
   const [showCharts, setShowCharts] = useState(true)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [ventaToDelete, setVentaToDelete] = useState<Venta | null>(null)
+  const [detalleOpen, setDetalleOpen] = useState(false)
+  const [selectedVenta, setSelectedVenta] = useState<Venta | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [stats, setStats] = useState({
     totalHoy: 0,
@@ -306,6 +308,16 @@ export const ListadoVentas = () => {
   const handleCancelDelete = () => {
     setDeleteDialogOpen(false)
     setVentaToDelete(null)
+  }
+
+  const handleOpenDetalle = (venta: Venta) => {
+    setSelectedVenta(venta)
+    setDetalleOpen(true)
+  }
+
+  const handleCloseDetalle = () => {
+    setSelectedVenta(null)
+    setDetalleOpen(false)
   }
 
   const getMetodoPagoIcono = (metodo: string) => metodoPagoIconos[metodo] || <Receipt />
@@ -573,12 +585,25 @@ export const ListadoVentas = () => {
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
                         <Tooltip title="Ver detalles">
-                          <IconButton size="small" onClick={() => handleView(venta.id)} sx={{ color: theme.palette.info.main }}>
+                          <IconButton size="small" onClick={() => handleOpenDetalle(venta)} sx={{ color: theme.palette.info.main, bgcolor: alpha(theme.palette.info.main, 0.08) }}>
                             <Visibility fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Imprimir ticket">
-                          <IconButton size="small" onClick={() => handlePrint(venta)} sx={{ color: theme.palette.warning.main }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handlePrint(venta)}
+                            sx={{
+                              color: theme.palette.warning.dark,
+                              bgcolor: alpha(theme.palette.warning.main, 0.12),
+                              transition: 'transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease',
+                              '&:hover': {
+                                bgcolor: alpha(theme.palette.warning.main, 0.2),
+                                transform: 'scale(1.08)',
+                                boxShadow: theme.shadows[4],
+                              },
+                            }}
+                          >
                             <Print fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -625,6 +650,101 @@ export const ListadoVentas = () => {
           <Button variant="contained" color="error" onClick={handleConfirmDelete} disabled={deleting}>
             {deleting ? 'Eliminando...' : 'Eliminar'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={detalleOpen} onClose={handleCloseDetalle} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ bgcolor: alpha(theme.palette.info.main, 0.08), color: theme.palette.info.dark, fontWeight: 'bold' }}>
+          Detalle de Venta
+        </DialogTitle>
+        <DialogContent dividers sx={{ background: alpha(theme.palette.info.main, 0.04) }}>
+          <Box sx={{ display: 'grid', gap: 3, mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">N° Venta</Typography>
+                <Typography variant="h6" fontWeight="bold">{selectedVenta?.numero}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">Cliente</Typography>
+                <Typography variant="body1" fontWeight="medium">{selectedVenta?.cliente.nombre}</Typography>
+                <Typography variant="caption" color="text.secondary">{selectedVenta?.cliente.documento}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">Método de pago</Typography>
+                <Chip
+                  icon={selectedVenta ? getMetodoPagoIcono(selectedVenta.metodoPago) : undefined}
+                  label={selectedVenta?.metodoPago}
+                  size="small"
+                  sx={{ bgcolor: alpha(selectedVenta ? getMetodoPagoColor(selectedVenta.metodoPago) : theme.palette.grey[500], 0.15), color: selectedVenta ? getMetodoPagoColor(selectedVenta.metodoPago) : theme.palette.text.primary }}
+                />
+              </Box>
+            </Box>
+
+            <Divider />
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography variant="subtitle2" color="text.secondary">Fecha / Hora</Typography>
+                <Typography variant="body1">{selectedVenta?.fecha} · {selectedVenta?.hora || ''}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography variant="subtitle2" color="text.secondary">Vendedor</Typography>
+                <Typography variant="body1">{selectedVenta?.vendedor.nombre}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography variant="subtitle2" color="text.secondary">Estado</Typography>
+                <Chip
+                  label={selectedVenta?.estado}
+                  size="small"
+                  color={selectedVenta?.estado === 'COMPLETADA' ? 'success' : 'error'}
+                  icon={selectedVenta?.estado === 'COMPLETADA' ? <CheckCircle /> : <Cancel />}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>Productos</Typography>
+            <Table size="small" sx={{ background: 'white', borderRadius: 2 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Producto</TableCell>
+                  <TableCell align="center">Cant.</TableCell>
+                  <TableCell align="right">Precio</TableCell>
+                  <TableCell align="right">Subtotal</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {selectedVenta?.productos.map((item) => (
+                  <TableRow key={item.id} hover>
+                    <TableCell>{item.nombre}</TableCell>
+                    <TableCell align="center">{item.cantidad}</TableCell>
+                    <TableCell align="right">S/ {item.precio.toFixed(2)}</TableCell>
+                    <TableCell align="right">S/ {item.subtotal.toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
+
+          <Box sx={{ mt: 3, display: 'grid', gap: 2, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+            <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 2, boxShadow: 1 }}>
+              <Typography variant="subtitle2" color="text.secondary">Subtotal</Typography>
+              <Typography variant="h6" fontWeight="bold">S/ {selectedVenta?.subtotal.toFixed(2)}</Typography>
+            </Box>
+            <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 2, boxShadow: 1 }}>
+              <Typography variant="subtitle2" color="text.secondary">IGV</Typography>
+              <Typography variant="h6" fontWeight="bold">S/ {selectedVenta?.igv.toFixed(2)}</Typography>
+            </Box>
+            <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 2, boxShadow: 1 }}>
+              <Typography variant="subtitle2" color="text.secondary">Total</Typography>
+              <Typography variant="h5" fontWeight="bold">S/ {selectedVenta?.total.toFixed(2)}</Typography>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
+          <Button onClick={handleCloseDetalle}>Cerrar</Button>
+          <Button variant="contained" color="primary" onClick={handleCloseDetalle}>Aceptar</Button>
         </DialogActions>
       </Dialog>
 

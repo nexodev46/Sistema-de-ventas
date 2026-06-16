@@ -6,6 +6,9 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   sendEmailVerification,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
   GoogleAuthProvider,
   FacebookAuthProvider,
 } from 'firebase/auth'
@@ -123,8 +126,9 @@ export const firebaseAuthService = {
   },
 
   // Iniciar sesión
-  login: async (email: string, password: string) => {
+  login: async (email: string, password: string, rememberMe = false) => {
     try {
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence)
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       const user = userCredential.user
       
@@ -166,7 +170,6 @@ export const firebaseAuthService = {
   logout: async () => {
     try {
       await signOut(auth)
-      localStorage.removeItem('token')
       localStorage.removeItem('userName')
     } catch (error) {
       console.error('Error en logout:', error)
@@ -306,6 +309,7 @@ export const firebaseAuthService = {
   // Iniciar sesión con Google
   signInWithGoogle: async () => {
     try {
+      await setPersistence(auth, browserSessionPersistence)
       const provider = new GoogleAuthProvider()
       const userCredential = await signInWithPopup(auth, provider)
       const user = userCredential.user
@@ -350,6 +354,7 @@ export const firebaseAuthService = {
   // Iniciar sesión con Facebook
   signInWithFacebook: async () => {
     try {
+      await setPersistence(auth, browserSessionPersistence)
       const provider = new FacebookAuthProvider()
       const userCredential = await signInWithPopup(auth, provider)
       const user = userCredential.user

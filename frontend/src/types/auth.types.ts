@@ -16,7 +16,7 @@ export interface LoginResponse {
 
 export interface AuthContextType {
   user: User | null
-  login: (email: string, password: string) => Promise<boolean>
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<boolean>
   register: (email: string, password: string, nombre: string, telefono?: string, direccion?: string) => Promise<boolean>
   signInWithGoogle: () => Promise<boolean>
   signInWithFacebook: () => Promise<boolean>

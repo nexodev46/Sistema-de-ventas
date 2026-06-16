@@ -1,5 +1,5 @@
 ﻿import { createContext, useState, useContext, useEffect, ReactNode } from 'react'
-import type { User as FirebaseUser } from 'firebase/auth'
+import { type User as FirebaseUser } from 'firebase/auth'
 import { AuthContextType, User } from '../types/auth.types'
 import { firebaseAuthService } from '../services/firebaseAuthService'
 import { auth } from '../services/firebase'
@@ -22,7 +22,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         const userData = await firebaseAuthService.getUserData(firebaseUser.uid)
-        if (userData) {
+        if (userData && userData.activo) {
           setUser({
             id: userData.uid,
             nombre: userData.nombre,
@@ -31,22 +31,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             activo: userData.activo,
             creadoEn: userData.creadoEn,
           })
-          localStorage.setItem('token', await firebaseUser.getIdToken())
-          localStorage.setItem('userName', userData.nombre)
+        } else {
+          await auth.signOut().catch(() => {})
+          setUser(null)
         }
       } else {
         setUser(null)
-        localStorage.removeItem('token')
-        localStorage.removeItem('userName')
       }
       setLoading(false)
     })
     return () => unsubscribe()
   }, [])
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
-      const { userData, token } = await firebaseAuthService.login(email, password)
+      const { userData } = await firebaseAuthService.login(email, password, rememberMe)
       if (userData) {
         setUser({
           id: userData.uid,
@@ -56,8 +55,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           activo: userData.activo,
           creadoEn: userData.creadoEn,
         })
-        localStorage.setItem('token', token)
-        localStorage.setItem('userName', userData.nombre)
         enqueueSnackbar('Bienvenido de vuelta', { variant: 'success' })
       }
       return true
@@ -88,7 +85,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signInWithGoogle = async () => {
     try {
-      const { userData, token } = await firebaseAuthService.signInWithGoogle()
+      const { userData } = await firebaseAuthService.signInWithGoogle()
       if (!userData) throw new Error('No se pudo obtener datos de usuario')
 
       setUser({
@@ -99,8 +96,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         activo: userData.activo,
         creadoEn: userData.creadoEn,
       })
-      localStorage.setItem('token', token)
-      localStorage.setItem('userName', userData.nombre)
       enqueueSnackbar('Inicio de sesión con Google exitoso', { variant: 'success' })
       return true
     } catch (error: any) {
@@ -113,7 +108,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signInWithFacebook = async () => {
     try {
-      const { userData, token } = await firebaseAuthService.signInWithFacebook()
+      const { userData } = await firebaseAuthService.signInWithFacebook()
       if (!userData) throw new Error('No se pudo obtener datos de usuario')
 
       setUser({
@@ -124,8 +119,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         activo: userData.activo,
         creadoEn: userData.creadoEn,
       })
-      localStorage.setItem('token', token)
-      localStorage.setItem('userName', userData.nombre)
       enqueueSnackbar('Inicio de sesión con Facebook exitoso', { variant: 'success' })
       return true
     } catch (error: any) {
@@ -150,7 +143,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         activo: userData.activo,
         creadoEn: userData.creadoEn,
       })
-      localStorage.setItem('userName', userData.nombre)
     }
   }
 

@@ -1,4 +1,6 @@
 import api from './api'
+import { auth } from './firebase'
+import { firebaseAuthService } from './firebaseAuthService'
 import { LoginResponse, User } from '../types/auth.types'
 
 export const authService = {
@@ -15,24 +17,19 @@ export const authService = {
     }
   },
 
-  getCurrentUser: (): User | null => {
-    const token = localStorage.getItem('token')
-    if (!token) return null
-    
-    try {
-      // Decodificar token JWT para obtener info del usuario
-      const payload = JSON.parse(atob(token.split('.')[1]))
-      return {
-        id: payload.sub,
-        nombre: payload.nombre,
-        email: payload.email,
-        rol: payload.rol,
-        activo: true,
-        creadoEn: new Date().toISOString(),
-      }
-    } catch (error) {
-      return null
-    }
+  getCurrentUser: async (): Promise<User | null> => {
+    const currentUser = auth.currentUser
+    if (!currentUser) return null
+
+    const userData = await firebaseAuthService.getUserData(currentUser.uid)
+    return userData ? {
+      id: userData.uid,
+      nombre: userData.nombre,
+      email: userData.email,
+      rol: userData.rol,
+      activo: userData.activo,
+      creadoEn: userData.creadoEn,
+    } : null
   },
 
   validateToken: async (): Promise<boolean> => {
