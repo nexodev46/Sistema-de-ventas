@@ -276,7 +276,7 @@ export const PuntoVenta = () => {
       {/* Header */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 3,
           mb: 3,
@@ -558,7 +558,7 @@ export const PuntoVenta = () => {
           </Box>
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
+          <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
             <Typography variant="subtitle2" gutterBottom>Resumen</Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography variant="body2">Productos ({carrito.length})</Typography>

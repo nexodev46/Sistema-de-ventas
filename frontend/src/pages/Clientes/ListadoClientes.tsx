@@ -299,7 +299,7 @@ export const ListadoClientes = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.info.dark} 0%, ${theme.palette.info.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,

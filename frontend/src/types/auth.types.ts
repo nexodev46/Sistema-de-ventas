@@ -20,6 +20,7 @@ export interface AuthContextType {
   register: (email: string, password: string, nombre: string, telefono?: string, direccion?: string) => Promise<boolean>
   signInWithGoogle: () => Promise<boolean>
   signInWithFacebook: () => Promise<boolean>
+  resetPassword: (email: string) => Promise<void>
   refreshUserData: () => Promise<void>
   logout: () => void
   loading: boolean

@@ -226,7 +226,7 @@ export const Facturacion = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.warning.dark} 0%, ${theme.palette.warning.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,
@@ -285,7 +285,7 @@ export const Facturacion = () => {
                           {configuracion.factura.serie}-{String(configuracion.factura.siguienteNumero).padStart(8, '0')}
                         </Typography>
                       </Box>
-                      <Button size="small" variant="outlined" onClick={handleResetearNumeracion}>
+                      <Button size="small" variant="outlined" color="primary" onClick={handleResetearNumeracion} sx={{ borderColor: theme.palette.primary.main, color: theme.palette.primary.main }}>
                         Reiniciar Numeración
                       </Button>
                     </Box>
@@ -432,10 +432,10 @@ export const Facturacion = () => {
 
             {/* Botones */}
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
-              <Button variant="outlined" onClick={handleReset}>
+              <Button variant="outlined" onClick={handleReset} sx={{ color: theme.palette.primary.main, borderColor: theme.palette.primary.main }}>
                 Restablecer
               </Button>
-              <Button variant="contained" startIcon={<Save />} onClick={guardarConfiguracion} disabled={saving}>
+              <Button variant="contained" startIcon={<Save />} onClick={guardarConfiguracion} disabled={saving} sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText, '&:hover': { bgcolor: theme.palette.primary.dark } }}>
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
               </Button>
             </Box>

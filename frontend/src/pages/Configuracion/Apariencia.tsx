@@ -50,14 +50,14 @@ import { motion } from 'framer-motion'
 
 // Colores predefinidos
 const coloresPrimarios = [
-  { nombre: 'Azul', valor: '#2563eb' },
-  { nombre: 'Verde', valor: '#10b981' },
-  { nombre: 'Rojo', valor: '#ef4444' },
-  { nombre: 'Naranja', valor: '#f59e0b' },
-  { nombre: 'Púrpura', valor: '#8b5cf6' },
-  { nombre: 'Rosa', valor: '#ec4899' },
-  { nombre: 'Celeste', valor: '#06b6d4' },
-  { nombre: 'Gris', valor: '#6b7280' },
+  { nombre: 'Lavanda Premium', valor: '#8b5cf6' },
+  { nombre: 'Azul Atlántico', valor: '#4f46e5' },
+  { nombre: 'Cian Sereno', valor: '#38bdf8' },
+  { nombre: 'Rosa Coral', valor: '#f472b6' },
+  { nombre: 'Verde Menta', valor: '#22c55e' },
+  { nombre: 'Oro Satinado', valor: '#f59e0b' },
+  { nombre: 'Malva Suave', valor: '#a78bfa' },
+  { nombre: 'Grafito Cálido', valor: '#64748b' },
 ]
 
 // Tamaños de fuente
@@ -84,7 +84,7 @@ const vistasDashboard = [
 
 export const Apariencia = () => {
   const theme = useTheme()
-  const { darkMode, toggleDarkMode, setDarkMode } = useThemeMode()
+  const { darkMode, toggleDarkMode, setDarkMode, primaryColor, setPrimaryColor } = useThemeMode()
   const { setCollapsed } = useSidebar()
   const { user } = useAuth()
   const { enqueueSnackbar } = useSnackbar()
@@ -92,7 +92,7 @@ export const Apariencia = () => {
   const [saving, setSaving] = useState(false)
   const [configuracion, setConfiguracion] = useState({
     modoOscuro: darkMode,
-    colorPrimario: '#2563eb',
+    colorPrimario: '#06b6d4',
     tamanioFuente: 'medium',
     densidad: 'standard',
     vistaDashboard: 'classic',
@@ -120,7 +120,7 @@ export const Apariencia = () => {
           if (data.apariencia) {
             const apariencia = {
               modoOscuro: data.apariencia.modoOscuro ?? darkMode,
-              colorPrimario: data.apariencia.colorPrimario || '#2563eb',
+              colorPrimario: data.apariencia.colorPrimario || '#06b6d4',
               tamanioFuente: data.apariencia.tamanioFuente || 'medium',
               densidad: data.apariencia.densidad || 'standard',
               vistaDashboard: data.apariencia.vistaDashboard || 'classic',
@@ -131,6 +131,7 @@ export const Apariencia = () => {
             }
             setConfiguracion(apariencia)
             setDarkMode(apariencia.modoOscuro)
+            setPrimaryColor(apariencia.colorPrimario)
             setCollapsed(apariencia.sidebarColapsado)
             document.documentElement.style.setProperty('--primary-color', apariencia.colorPrimario)
           }
@@ -163,8 +164,11 @@ export const Apariencia = () => {
         },
       })
       setDarkMode(configuracion.modoOscuro)
+      setPrimaryColor(configuracion.colorPrimario)
       setCollapsed(configuracion.sidebarColapsado)
       document.documentElement.style.setProperty('--primary-color', configuracion.colorPrimario)
+      // Guardar en localStorage para persistencia
+      localStorage.setItem('primaryColor', configuracion.colorPrimario)
       enqueueSnackbar('Configuración guardada correctamente', { variant: 'success' })
     } catch (error) {
       console.error('Error guardando configuración:', error)
@@ -176,13 +180,16 @@ export const Apariencia = () => {
 
   const handleColorChange = (color: string) => {
     setConfiguracion(prev => ({ ...prev, colorPrimario: color }))
+    setPrimaryColor(color)
     document.documentElement.style.setProperty('--primary-color', color)
+    // Guardar en localStorage para persistencia
+    localStorage.setItem('primaryColor', color)
   }
 
   const handleReset = () => {
     const defaults = {
       modoOscuro: false,
-      colorPrimario: '#2563eb',
+      colorPrimario: '#06b6d4',
       tamanioFuente: 'medium',
       densidad: 'standard',
       vistaDashboard: 'classic',
@@ -193,8 +200,10 @@ export const Apariencia = () => {
     }
     setConfiguracion(defaults)
     setDarkMode(defaults.modoOscuro)
+    setPrimaryColor(defaults.colorPrimario)
     setCollapsed(defaults.sidebarColapsado)
     document.documentElement.style.setProperty('--primary-color', defaults.colorPrimario)
+    localStorage.setItem('primaryColor', defaults.colorPrimario)
     enqueueSnackbar('Configuración restablecida', { variant: 'info' })
   }
 
@@ -211,11 +220,15 @@ export const Apariencia = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+          background: theme.palette.mode === 'dark'
+            ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)} 0%, ${alpha(theme.palette.background.paper, 0.14)} 100%)`
+            : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.3)} 0%, ${alpha(theme.palette.primary.light, 0.18)} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,
-          color: 'white',
+          color: theme.palette.text.primary,
+          boxShadow: '0 24px 85px rgba(31, 41, 55, 0.12)',
+          border: `1px solid ${theme.palette.divider}`,
         }}
       >
         <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -229,14 +242,14 @@ export const Apariencia = () => {
       <Grid container spacing={3}>
         {/* Columna izquierda - Opciones */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ borderRadius: 3, p: 3 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Paper sx={{ borderRadius: 3, p: 3, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, boxShadow: '0 24px 80px rgba(15,23,42,0.12)' }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme.palette.text.primary }}>
               <Palette /> Personalización
             </Typography>
-            <Divider sx={{ mb: 3 }} />
+            <Divider sx={{ mb: 3, borderColor: theme.palette.divider }} />
 
             {/* Tema Oscuro/Claro */}
-            <Card sx={{ mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.03), borderRadius: 2 }}>
+            <Card sx={{ mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.08), borderRadius: 2, border: `1px solid ${theme.palette.divider}` }}>
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -249,22 +262,22 @@ export const Apariencia = () => {
                     </Box>
                   </Box>
                   <Button
-              variant="outlined"
-              startIcon={darkMode ? <LightMode /> : <DarkMode />}
-              onClick={() => {
-                const nuevoModo = !darkMode
-                setDarkMode(nuevoModo)
-                setConfiguracion(prev => ({ ...prev, modoOscuro: nuevoModo }))
-              }}
-            >
-              {darkMode ? 'Modo Claro' : 'Modo Oscuro'}
-            </Button>
+                    variant="outlined"
+                    startIcon={darkMode ? <LightMode /> : <DarkMode />}
+                    onClick={() => {
+                      const nuevoModo = !darkMode
+                      setDarkMode(nuevoModo)
+                      setConfiguracion(prev => ({ ...prev, modoOscuro: nuevoModo }))
+                    }}
+                  >
+                    {darkMode ? 'Modo Claro' : 'Modo Oscuro'}
+                  </Button>
                 </Box>
               </CardContent>
             </Card>
 
             {/* Color primario */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2, color: theme.palette.text.primary }}>
               Color Primario
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
@@ -276,10 +289,10 @@ export const Apariencia = () => {
                       width: 48,
                       height: 48,
                       cursor: 'pointer',
-                      border: configuracion.colorPrimario === color.valor ? `3px solid ${theme.palette.common.white}` : 'none',
-                      boxShadow: configuracion.colorPrimario === color.valor ? 4 : 1,
-                      '&:hover': { transform: 'scale(1.1)' },
-                      transition: 'transform 0.2s',
+                      border: configuracion.colorPrimario === color.valor ? `3px solid ${theme.palette.primary.contrastText}` : `1px solid ${alpha(theme.palette.text.primary, 0.16)}`,
+                      boxShadow: configuracion.colorPrimario === color.valor ? `0 0 24px ${alpha(color.valor, 0.42)}` : `0 10px 25px ${alpha(theme.palette.text.primary, 0.12)}`,
+                      '&:hover': { transform: 'translateY(-2px)', boxShadow: `0 14px 32px ${alpha(color.valor, 0.22)}` },
+                      transition: 'transform 0.2s, box-shadow 0.2s',
                     }}
                     onClick={() => handleColorChange(color.valor)}
                   />
@@ -295,6 +308,7 @@ export const Apariencia = () => {
               <Select
                 value={configuracion.tamanioFuente}
                 onChange={(e) => setConfiguracion(prev => ({ ...prev, tamanioFuente: e.target.value }))}
+                sx={{ bgcolor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 2, '.MuiSelect-icon': { color: theme.palette.text.secondary } }}
               >
                 {tamaniosFuente.map((t) => (
                   <MenuItem key={t.valor} value={t.valor}>{t.nombre}</MenuItem>
@@ -310,6 +324,7 @@ export const Apariencia = () => {
               <Select
                 value={configuracion.densidad}
                 onChange={(e) => setConfiguracion(prev => ({ ...prev, densidad: e.target.value }))}
+                sx={{ bgcolor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 2, '.MuiSelect-icon': { color: theme.palette.text.secondary } }}
               >
                 {densidades.map((d) => (
                   <MenuItem key={d.valor} value={d.valor}>{d.nombre}</MenuItem>
@@ -327,11 +342,11 @@ export const Apariencia = () => {
                   <Card
                     sx={{
                       cursor: 'pointer',
-                      border: configuracion.vistaDashboard === vista.valor ? `2px solid ${theme.palette.primary.main}` : '1px solid',
-                      borderColor: configuracion.vistaDashboard === vista.valor ? 'primary.main' : 'divider',
-                      bgcolor: configuracion.vistaDashboard === vista.valor ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
+                      border: configuracion.vistaDashboard === vista.valor ? `2px solid ${theme.palette.primary.main}` : '1px solid rgba(255,255,255,0.12)',
+                      borderColor: configuracion.vistaDashboard === vista.valor ? theme.palette.primary.main : 'rgba(255,255,255,0.08)',
+                      bgcolor: configuracion.vistaDashboard === vista.valor ? alpha(theme.palette.primary.main, 0.12) : theme.palette.background.default,
                       transition: 'all 0.2s',
-                      '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 },
+                      '&:hover': { transform: 'translateY(-4px)', boxShadow: theme.palette.mode === 'dark' ? '0 20px 50px rgba(15,23,42,0.4)' : '0 20px 50px rgba(15,23,42,0.12)' },
                     }}
                     onClick={() => setConfiguracion(prev => ({ ...prev, vistaDashboard: vista.valor }))}
                   >
@@ -388,10 +403,23 @@ export const Apariencia = () => {
 
             {/* Botones de acción */}
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
-              <Button variant="outlined" onClick={handleReset}>
+              <Button variant="outlined" onClick={handleReset} sx={{ color: theme.palette.text.primary, borderColor: theme.palette.divider }}>
                 Restablecer
               </Button>
-              <Button variant="contained" startIcon={<CheckCircle />} onClick={guardarConfiguracion} disabled={saving}>
+              <Button
+                variant="contained"
+                startIcon={<CheckCircle />}
+                onClick={guardarConfiguracion}
+                disabled={saving}
+                sx={{
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  color: theme.palette.primary.contrastText,
+                  boxShadow: `0 20px 60px ${alpha(theme.palette.primary.main, 0.24)}`,
+                  '&:hover': {
+                    filter: 'brightness(1.05)',
+                  },
+                }}
+              >
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
               </Button>
             </Box>
@@ -400,21 +428,23 @@ export const Apariencia = () => {
 
         {/* Columna derecha - Vista previa */}
         <Grid item xs={12} md={4}>
-          <Paper sx={{ borderRadius: 3, p: 3, position: 'sticky', top: 20 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Paper sx={{ borderRadius: 3, p: 3, position: 'sticky', top: 20, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, boxShadow: '0 24px 80px rgba(15, 23, 42, 0.12)' }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme.palette.text.primary }}>
               <Visibility /> Vista Previa
             </Typography>
-            <Divider sx={{ mb: 2 }} />
+            <Divider sx={{ mb: 2, borderColor: theme.palette.divider }} />
 
             {/* Preview Card */}
             <Card
               sx={{
                 borderRadius: 2,
-                border: `1px solid ${alpha(configuracion.colorPrimario, 0.3)}`,
+                border: `1px solid ${alpha(configuracion.colorPrimario, 0.4)}`,
                 overflow: 'hidden',
+                boxShadow: theme.palette.mode === 'dark' ? '0 24px 60px rgba(15,23,42,0.24)' : '0 20px 50px rgba(15,23,42,0.08)',
+                bgcolor: theme.palette.background.default,
               }}
             >
-              <Box sx={{ bgcolor: alpha(configuracion.colorPrimario, 0.1), p: 2 }}>
+              <Box sx={{ bgcolor: alpha(configuracion.colorPrimario, 0.16), p: 2, borderBottom: `1px solid ${alpha(configuracion.colorPrimario, 0.3)}` }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="body2" fontWeight="bold">Sistema de ventas</Typography>
                   <Avatar sx={{ width: 32, height: 32, bgcolor: configuracion.colorPrimario }}>A</Avatar>
@@ -437,7 +467,7 @@ export const Apariencia = () => {
             </Card>
 
             {/* Previsualización de fuentes */}
-            <Box sx={{ mt: 3, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+            <Box sx={{ mt: 3, p: 2, bgcolor: theme.palette.action.hover, borderRadius: 2 }}>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Previsualización de fuentes
               </Typography>

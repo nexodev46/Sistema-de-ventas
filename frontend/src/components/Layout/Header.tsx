@@ -57,7 +57,7 @@ export const Header = () => {
   const { darkMode, toggleDarkMode } = useThemeMode()
   const { toggleMobile } = useSidebar()
   const navigate = useNavigate()
-  
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -272,11 +272,11 @@ export const Header = () => {
                 sx={{
                   position: 'relative',
                   borderRadius: 3,
-                  border: '2px solid #3FB76C',
+                  border: `2px solid ${theme.palette.primary.main}`,
                   bgcolor: alpha(theme.palette.common.black, 0.05),
-                  '&:hover': { 
+                  '&:hover': {
                     bgcolor: alpha(theme.palette.common.black, 0.1),
-                    borderColor: '#2d9d52',
+                    borderColor: theme.palette.primary.dark,
                   },
                   width: '100%',
                   maxWidth: 420,
@@ -303,10 +303,10 @@ export const Header = () => {
                   onChange={(event) => setSearchTerm(event.target.value)}
                   onKeyDown={handleSearchKeyDown}
                   placeholder="Buscar productos, ventas, clientes..."
-                  sx={{ 
-                    pl: 5, 
-                    py: 0.75, 
-                    width: '100%', 
+                  sx={{
+                    pl: 5,
+                    py: 0.75,
+                    width: '100%',
                     fontSize: 14,
                     '& .MuiInputBase-input::placeholder': {
                       color: 'transparent',
@@ -371,201 +371,201 @@ export const Header = () => {
             </Tooltip>
 
             {/* Menú de notificaciones */}
-          <Menu
-            anchorEl={notifAnchor}
-            open={Boolean(notifAnchor)}
-            onClose={handleNotifClose}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            PaperProps={{
-              sx: { width: 360, maxHeight: 450, borderRadius: 2 },
-            }}
-          >
-            <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
-              <Typography variant="subtitle1" fontWeight="bold">Notificaciones</Typography>
-              <Box>
-                {notifications.length > 0 && (
-                  <>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ cursor: 'pointer', mr: 1, color: 'primary.main' }}
-                      onClick={handleMarkAllAsRead}
-                    >
-                      Marcar todas como leídas
-                    </Typography>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ cursor: 'pointer', color: 'error.main' }}
-                      onClick={handleClearNotifications}
-                    >
-                      Limpiar
-                    </Typography>
-                  </>
-                )}
-              </Box>
-            </Box>
-            
-            {notifications.length === 0 ? (
-              <Box sx={{ p: 4, textAlign: 'center' }}>
-                <NotificationsIcon sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
-                <Typography variant="body2" color="text.secondary">
-                  No hay notificaciones
-                </Typography>
-              </Box>
-            ) : (
-              <>
-                {notifications.slice(0, 5).map((notif) => (
-                  <MenuItem
-                    key={notif.id}
-                    onClick={() => handleNotificationClick(notif)}
-                    sx={{
-                      py: 1.5,
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                      bgcolor: notif.leida ? 'transparent' : alpha(theme.palette.primary.main, 0.05),
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', width: '100%', gap: 1 }}>
-                      <Box sx={{ mt: 0.25, color: notif.leida ? 'text.secondary' : 'primary.main' }}>
-                        {getIconoPorTipo(notif.tipo)}
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" fontWeight={notif.leida ? 'normal' : 'bold'}>
-                          {notif.titulo}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                          {notif.mensaje}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatNotificationDate(notif.fecha)}
-                        </Typography>
-                      </Box>
-                      {!notif.leida && (
-                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mt: 1.5 }} />
-                      )}
-                    </Box>
-                  </MenuItem>
-                ))}
-                <Box sx={{ p: 1.5, textAlign: 'center', borderTop: 1, borderColor: 'divider' }}>
-                  <Typography
-                    variant="caption"
-                    color="primary.main"
-                    sx={{ cursor: 'pointer' }}
-                    onClick={() => {
-                      navigate('/dashboard')
-                      handleNotifClose()
-                    }}
-                  >
-                    Ver todas las notificaciones
-                  </Typography>
-                </Box>
-              </>
-            )}
-          </Menu>
-
-          {/* Perfil de usuario */}
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              cursor: 'pointer',
-              ml: 1,
-              '&:hover': { opacity: 0.8 },
-            }} 
-            onClick={handleMenuOpen}
-          >
-            <Avatar 
-              src={userPhotoURL || undefined}
-              sx={{ 
-                width: { xs: 32, sm: 36 }, 
-                height: { xs: 32, sm: 36 },
-                bgcolor: getRoleColor(),
-                fontSize: '0.9rem',
-                fontWeight: 'bold',
-                border: `3px solid ${theme.palette.primary.main}`,
-                boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  border: `3px solid ${theme.palette.primary.light}`,
-                  boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.4)}`,
-                },
+            <Menu
+              anchorEl={notifAnchor}
+              open={Boolean(notifAnchor)}
+              onClose={handleNotifClose}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              PaperProps={{
+                sx: { width: 360, maxHeight: 450, borderRadius: 2 },
               }}
             >
-              {!userPhotoURL && (user?.nombre?.charAt(0)?.toUpperCase() || 'A')}
-            </Avatar>
-            {!isMobile && (
-              <Box sx={{ ml: 1.5, display: { xs: 'none', md: 'block' } }}>
-                <Typography variant="body2" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
-                  {displayName}
-                </Typography>
-                <Typography variant="caption" sx={{ color: getRoleColor(), fontSize: 11 }}>
-                  {getRoleLabel()}
-                </Typography>
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+                <Typography variant="subtitle1" fontWeight="bold">Notificaciones</Typography>
+                <Box>
+                  {notifications.length > 0 && (
+                    <>
+                      <Typography
+                        variant="caption"
+                        sx={{ cursor: 'pointer', mr: 1, color: 'primary.main' }}
+                        onClick={handleMarkAllAsRead}
+                      >
+                        Marcar todas como leídas
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ cursor: 'pointer', color: 'error.main' }}
+                        onClick={handleClearNotifications}
+                      >
+                        Limpiar
+                      </Typography>
+                    </>
+                  )}
+                </Box>
               </Box>
-            )}
-          </Box>
 
-          {/* Menú de usuario */}
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            PaperProps={{
-              sx: { width: 220, borderRadius: 2, mt: 1 },
-            }}
-          >
-            <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
-              <Typography variant="subtitle2" fontWeight="bold">
-                {displayName}
-              </Typography>
-              <Typography 
-                variant="caption" 
-                color="text.secondary"
-                sx={{ 
-                  display: 'block',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  wordBreak: 'break-word',
+              {notifications.length === 0 ? (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <NotificationsIcon sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    No hay notificaciones
+                  </Typography>
+                </Box>
+              ) : (
+                <>
+                  {notifications.slice(0, 5).map((notif) => (
+                    <MenuItem
+                      key={notif.id}
+                      onClick={() => handleNotificationClick(notif)}
+                      sx={{
+                        py: 1.5,
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        bgcolor: notif.leida ? 'transparent' : alpha(theme.palette.primary.main, 0.05),
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', width: '100%', gap: 1 }}>
+                        <Box sx={{ mt: 0.25, color: notif.leida ? 'text.secondary' : 'primary.main' }}>
+                          {getIconoPorTipo(notif.tipo)}
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="body2" fontWeight={notif.leida ? 'normal' : 'bold'}>
+                            {notif.titulo}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                            {notif.mensaje}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {formatNotificationDate(notif.fecha)}
+                          </Typography>
+                        </Box>
+                        {!notif.leida && (
+                          <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mt: 1.5 }} />
+                        )}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                  <Box sx={{ p: 1.5, textAlign: 'center', borderTop: 1, borderColor: 'divider' }}>
+                    <Typography
+                      variant="caption"
+                      color="primary.main"
+                      sx={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        navigate('/dashboard')
+                        handleNotifClose()
+                      }}
+                    >
+                      Ver todas las notificaciones
+                    </Typography>
+                  </Box>
+                </>
+              )}
+            </Menu>
+
+            {/* Perfil de usuario */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                ml: 1,
+                '&:hover': { opacity: 0.8 },
+              }}
+              onClick={handleMenuOpen}
+            >
+              <Avatar
+                src={userPhotoURL || undefined}
+                sx={{
+                  width: { xs: 32, sm: 36 },
+                  height: { xs: 32, sm: 36 },
+                  bgcolor: getRoleColor(),
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  border: `3px solid ${theme.palette.primary.main}`,
+                  boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    border: `3px solid ${theme.palette.primary.light}`,
+                    boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
                 }}
               >
-                {user?.email || 'usuario@empresa.com'}
-              </Typography>
-              <Box sx={{ mt: 0.5 }}>
-                <Typography variant="caption" sx={{ color: getRoleColor(), fontWeight: 'bold' }}>
-                  {getRoleLabel()}
-                </Typography>
-              </Box>
+                {!userPhotoURL && (user?.nombre?.charAt(0)?.toUpperCase() || 'A')}
+              </Avatar>
+              {!isMobile && (
+                <Box sx={{ ml: 1.5, display: { xs: 'none', md: 'block' } }}>
+                  <Typography variant="body2" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
+                    {displayName}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: getRoleColor(), fontSize: 11 }}>
+                    {getRoleLabel()}
+                  </Typography>
+                </Box>
+              )}
             </Box>
-            
-            <MenuItem onClick={() => { handleMenuClose(); navigate('/dashboard'); }}>
-              <ListItemIcon><DashboardIcon fontSize="small" /></ListItemIcon>
-              <ListItemText>Dashboard</ListItemText>
-            </MenuItem>
-            
-            {user?.rol === 'ADMIN' && (
-              <MenuItem onClick={() => { handleMenuClose(); navigate('/configuracion'); }}>
-                <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
-                <ListItemText>Configuración</ListItemText>
+
+            {/* Menú de usuario */}
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              PaperProps={{
+                sx: { width: 220, borderRadius: 2, mt: 1 },
+              }}
+            >
+              <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  {displayName}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    display: 'block',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  {user?.email || 'usuario@empresa.com'}
+                </Typography>
+                <Box sx={{ mt: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: getRoleColor(), fontWeight: 'bold' }}>
+                    {getRoleLabel()}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <MenuItem onClick={() => { handleMenuClose(); navigate('/dashboard'); }}>
+                <ListItemIcon><DashboardIcon fontSize="small" /></ListItemIcon>
+                <ListItemText>Dashboard</ListItemText>
               </MenuItem>
-            )}
-            
-            <MenuItem onClick={() => { handleMenuClose(); navigate('/configuracion/perfil'); }}>
-              <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
-              <ListItemText>Mi Perfil</ListItemText>
-            </MenuItem>
-            
-            <Divider />
-            
-            <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
-              <ListItemIcon><LogoutIcon fontSize="small" color="error" /></ListItemIcon>
-              <ListItemText>Cerrar Sesión</ListItemText>
-            </MenuItem>
-          </Menu>
+
+              {user?.rol === 'ADMIN' && (
+                <MenuItem onClick={() => { handleMenuClose(); navigate('/configuracion'); }}>
+                  <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>Configuración</ListItemText>
+                </MenuItem>
+              )}
+
+              <MenuItem onClick={() => { handleMenuClose(); navigate('/configuracion/perfil'); }}>
+                <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
+                <ListItemText>Mi Perfil</ListItemText>
+              </MenuItem>
+
+              <Divider />
+
+              <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
+                <ListItemIcon><LogoutIcon fontSize="small" color="error" /></ListItemIcon>
+                <ListItemText>Cerrar Sesión</ListItemText>
+              </MenuItem>
+            </Menu>
+          </Box>
         </Box>
-      </Box>
       </Toolbar>
 
       {/* Barra de búsqueda móvil desplegable */}
@@ -581,11 +581,11 @@ export const Header = () => {
             sx={{
               p: 1,
               borderRadius: 2,
-              border: '2px solid #3FB76C',
+              border: `2px solid ${theme.palette.primary.main}`,
               bgcolor: alpha(theme.palette.common.black, 0.05),
-              '&:hover': { 
+              '&:hover': {
                 bgcolor: alpha(theme.palette.common.black, 0.1),
-                borderColor: '#2d9d52',
+                borderColor: theme.palette.primary.dark,
               },
               transition: 'all 0.2s ease',
               '& .MuiInputBase-input::placeholder': {

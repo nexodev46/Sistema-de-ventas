@@ -106,6 +106,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }
 
+  const resetPassword = async (email: string) => {
+    try {
+      await firebaseAuthService.resetPassword(email)
+      enqueueSnackbar('Correo de restablecimiento enviado', { variant: 'success' })
+    } catch (error: any) {
+      let msg = 'No se pudo enviar el correo de restablecimiento'
+      if (error.code === 'auth/user-not-found') msg = 'Usuario no encontrado'
+      else if (error.code === 'auth/invalid-email') msg = 'Correo inválido'
+      enqueueSnackbar(msg, { variant: 'error' })
+      throw error
+    }
+  }
+
   const signInWithFacebook = async () => {
     try {
       const { userData } = await firebaseAuthService.signInWithFacebook()
@@ -153,7 +166,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, signInWithGoogle, signInWithFacebook, refreshUserData, logout, loading, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, register, signInWithGoogle, signInWithFacebook, resetPassword, refreshUserData, logout, loading, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   )

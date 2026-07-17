@@ -294,7 +294,7 @@ export const Seguridad = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,
@@ -396,8 +396,16 @@ export const Seguridad = () => {
                 </Box>
                 <Button
                   variant={twoFAEnabled ? 'outlined' : 'contained'}
-                  color={twoFAEnabled ? 'error' : 'primary'}
+                  color={twoFAEnabled ? 'primary' : 'primary'}
                   onClick={handleToggle2FA}
+                  sx={{
+                    bgcolor: twoFAEnabled ? alpha(theme.palette.primary.main, 0.12) : theme.palette.primary.main,
+                    color: twoFAEnabled ? theme.palette.primary.contrastText : theme.palette.primary.contrastText,
+                    borderColor: twoFAEnabled ? theme.palette.primary.main : 'transparent',
+                    '&:hover': {
+                      bgcolor: twoFAEnabled ? alpha(theme.palette.primary.main, 0.15) : theme.palette.primary.dark,
+                    },
+                  }}
                 >
                   {twoFAEnabled ? 'Desactivar 2FA' : 'Activar 2FA'}
                 </Button>

@@ -279,7 +279,7 @@ export const AjustesInventario = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.warning.dark} 0%, ${theme.palette.warning.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,
@@ -301,7 +301,7 @@ export const AjustesInventario = () => {
             onClick={handleNuevoAjuste}
             sx={{
               bgcolor: 'white',
-              color: theme.palette.warning.main,
+              color: theme.palette.primary.main,
               '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
               borderRadius: 2,
               px: 3,

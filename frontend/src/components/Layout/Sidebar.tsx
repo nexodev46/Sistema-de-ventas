@@ -31,7 +31,7 @@ import {
   Palette as PaletteIcon,
   Notifications as NotificationsIcon,
   Storage as StorageIcon,
-  
+
   Tune as TuneIcon,
   History as HistoryIcon,
   Assessment as AssessmentIcon,
@@ -198,23 +198,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
 
   // Categorías desplegables (solo expanden/colapsan, NO son botones)
   const expandableCategories = [
-    { 
-      text: 'Inventario', 
-      icon: <InventoryIcon />, 
+    {
+      text: 'Inventario',
+      icon: <InventoryIcon />,
       openKey: 'inventario' as const,
       submenus: inventarioSubmenus,
       visible: isAdmin
     },
-    { 
-      text: 'Reportes', 
-      icon: <AssessmentIcon />, 
+    {
+      text: 'Reportes',
+      icon: <AssessmentIcon />,
       openKey: 'reportes' as const,
       submenus: reportesSubmenus,
       visible: isAdmin
     },
-    { 
-      text: 'Configuración', 
-      icon: <SettingsIcon />, 
+    {
+      text: 'Configuración',
+      icon: <SettingsIcon />,
       openKey: 'configuracion' as const,
       submenus: configSubmenus,
       visible: isAdmin
@@ -227,7 +227,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: '#3FB76C',
+        bgcolor: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.primary.main,
         borderRight: `1px solid ${theme.palette.divider}`,
         overflowY: 'auto',
         // ensure final buttons are not hidden behind viewport edges
@@ -281,7 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
             <Typography
               variant="subtitle1"
               sx={{
-                color: theme.palette.secondary.dark,
+                color: theme.palette.primary.main,
                 fontWeight: 800,
                 letterSpacing: 0.5,
                 fontFamily: 'Inter, system-ui, sans-serif',
@@ -289,7 +289,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
                 textShadow: '0 1px 3px rgba(0,0,0,0.12)',
               }}
             >
-              {companyName || 'Kaita'}
+              {companyName || 'Sistema de Ventas'}
             </Typography>
           )}
         </Box>
@@ -325,13 +325,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
                     transform: 'translateX(4px)',
                   },
                   '&.Mui-selected': {
-                    bgcolor: 'rgba(255, 255, 255, 0.12)',
+                    bgcolor: theme.palette.mode === 'dark'
+                      ? alpha(theme.palette.primary.main, 0.18)
+                      : 'rgba(255, 255, 255, 0.24)',
                     color: 'white',
-                    fontWeight: 500,
-                    borderLeft: '3px solid white',
+                    fontWeight: 600,
+                    borderLeft: `3px solid ${theme.palette.common.white}`,
                     pl: collapsed && !isMobile ? 2 : 'calc(1rem - 3px)',
-                    '&:hover': { 
-                      bgcolor: 'rgba(255, 255, 255, 0.18)',
+                    boxShadow: theme.palette.mode === 'light' ? 'inset 4px 0 0 rgba(255, 255, 255, 0.72)' : undefined,
+                    '&:hover': {
+                      bgcolor: theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.primary.main, 0.26)
+                        : 'rgba(255, 255, 255, 0.32)',
                       transform: 'translateX(4px)',
                     },
                     '& .MuiListItemIcon-root': { color: 'white' },
@@ -375,7 +380,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
                     fontWeight: 600,
                     fontSize: '0.95rem',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': { 
+                    '&:hover': {
                       border: '1.5px solid rgba(255, 255, 255, 0.4)',
                       background: 'linear-gradient(135deg, #e53935 0%, #c62828 100%)',
                       boxShadow: '0 8px 16px rgba(244, 67, 54, 0.4)',
@@ -477,11 +482,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
                                 transform: 'translateX(3px)',
                               },
                               '&.Mui-selected': {
-                                bgcolor: 'rgba(255, 255, 255, 0.25)',
+                                bgcolor: theme.palette.mode === 'dark'
+                                  ? alpha(theme.palette.primary.main, 0.22)
+                                  : 'rgba(255, 255, 255, 0.2)',
                                 color: 'white',
                                 fontWeight: 600,
-                                '&:hover': { 
-                                  bgcolor: 'rgba(255, 255, 255, 0.35)',
+                                borderLeft: `3px solid ${theme.palette.common.white}`,
+                                boxShadow: theme.palette.mode === 'light' ? 'inset 4px 0 0 rgba(255, 255, 255, 0.72)' : undefined,
+                                '&:hover': {
+                                  bgcolor: theme.palette.mode === 'dark'
+                                    ? alpha(theme.palette.primary.main, 0.3)
+                                    : 'rgba(255, 255, 255, 0.28)',
                                   transform: 'translateX(3px)',
                                 },
                                 '& .MuiListItemIcon-root': { color: 'white' },
@@ -528,7 +539,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
                     fontWeight: 600,
                     fontSize: '0.95rem',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': { 
+                    '&:hover': {
                       border: '1.5px solid rgba(255, 255, 255, 0.4)',
                       background: 'linear-gradient(135deg, #e53935 0%, #c62828 100%)',
                       boxShadow: '0 8px 16px rgba(244, 67, 54, 0.4)',

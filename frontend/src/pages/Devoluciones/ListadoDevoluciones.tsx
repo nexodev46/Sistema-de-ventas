@@ -282,7 +282,7 @@ export const ListadoDevoluciones = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.error.dark} 0%, ${theme.palette.error.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,
@@ -304,7 +304,7 @@ export const ListadoDevoluciones = () => {
             onClick={() => navigate('/devoluciones/nueva')}
             sx={{
               bgcolor: 'white',
-              color: theme.palette.error.main,
+              color: theme.palette.primary.main,
               '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
               borderRadius: 2,
               px: 3,
@@ -321,10 +321,10 @@ export const ListadoDevoluciones = () => {
           <StatCard title="Total Devoluciones" value={stats.total} icon={<AssignmentReturn />} color={theme.palette.primary.main} delay={100} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Reembolsado" value={stats.totalReembolsado} prefix="S/ " icon={<AttachMoney />} color={theme.palette.warning.main} delay={200} />
+          <StatCard title="Total Reembolsado" value={stats.totalReembolsado} prefix="S/ " icon={<AttachMoney />} color={theme.palette.primary.main} delay={200} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Pendientes" value={stats.pendientes} icon={<Pending />} color={theme.palette.warning.main} delay={300} />
+          <StatCard title="Pendientes" value={stats.pendientes} icon={<Pending />} color={theme.palette.primary.main} delay={300} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard title="Completadas" value={stats.completadas} icon={<CheckCircle />} color={theme.palette.success.main} delay={400} />

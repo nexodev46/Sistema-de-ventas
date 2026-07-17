@@ -332,7 +332,7 @@ export const Almacenamiento = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,
@@ -454,9 +454,9 @@ export const Almacenamiento = () => {
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <Card sx={{ bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
+                <Card sx={{ bgcolor: alpha(theme.palette.primary.main, 0.08), borderRadius: 2 }}>
                   <CardContent sx={{ textAlign: 'center' }}>
-                    <CloudUpload sx={{ fontSize: 40, color: theme.palette.info.main, mb: 1 }} />
+                    <CloudUpload sx={{ fontSize: 40, color: theme.palette.primary.main, mb: 1 }} />
                     <Typography variant="subtitle1" fontWeight="bold">Exportar Backup</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
                       Descarga toda tu base de datos
@@ -466,6 +466,7 @@ export const Almacenamiento = () => {
                       startIcon={<Backup />}
                       onClick={handleExportarBackup}
                       disabled={backupLoading}
+                      sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText, '&:hover': { bgcolor: theme.palette.primary.dark } }}
                     >
                       {backupLoading ? 'Exportando...' : 'Exportar'}
                     </Button>
@@ -473,19 +474,19 @@ export const Almacenamiento = () => {
                 </Card>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <Card sx={{ bgcolor: alpha(theme.palette.warning.main, 0.05), borderRadius: 2 }}>
+                <Card sx={{ bgcolor: alpha(theme.palette.primary.light, 0.15), borderRadius: 2 }}>
                   <CardContent sx={{ textAlign: 'center' }}>
-                    <CloudDownload sx={{ fontSize: 40, color: theme.palette.warning.main, mb: 1 }} />
+                    <CloudDownload sx={{ fontSize: 40, color: theme.palette.primary.dark, mb: 1 }} />
                     <Typography variant="subtitle1" fontWeight="bold">Restaurar Backup</Typography>
                     <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
                       Restaura datos desde un archivo
                     </Typography>
                     <Button
                       variant="contained"
-                      color="warning"
                       startIcon={<Restore />}
                       onClick={handleRestaurarBackup}
                       disabled={restoreLoading}
+                      sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText, '&:hover': { bgcolor: theme.palette.primary.dark } }}
                     >
                       {restoreLoading ? 'Restaurando...' : 'Restaurar'}
                     </Button>

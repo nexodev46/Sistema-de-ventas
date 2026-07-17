@@ -67,6 +67,7 @@ import {
 } from '@mui/icons-material'
 import { firebaseAuthService, UserData } from '../../services/firebaseAuthService'
 import { useAuth } from '../../contexts/AuthContext'
+import { useSnackbar } from 'notistack'
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../../services/firebase'
 import { motion } from 'framer-motion'
@@ -261,6 +262,7 @@ const UserCard = ({ user, onEdit, onDelete, onToggleStatus, currentUser }: any) 
 export const Usuarios = () => {
   const theme = useTheme()
   const { user: currentUser } = useAuth()
+  const { enqueueSnackbar } = useSnackbar()
   const [usuarios, setUsuarios] = useState<UserData[]>([])
   const [filtered, setFiltered] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
@@ -372,11 +374,13 @@ export const Usuarios = () => {
     if (!userToDelete) return
     try {
       await firebaseAuthService.deleteUserAccount(userToDelete.uid)
+      enqueueSnackbar(`Usuario ${userToDelete.nombre} eliminado correctamente`, { variant: 'success' })
       await cargarUsuarios()
       setOpenDeleteDialog(false)
       setUserToDelete(null)
-    } catch (error) {
-      console.error('Error deshabilitando usuario:', error)
+    } catch (error: any) {
+      console.error('Error eliminando usuario:', error)
+      enqueueSnackbar('Error al eliminar el usuario. Intenta de nuevo.', { variant: 'error' })
     }
   }
 
@@ -567,24 +571,24 @@ export const Usuarios = () => {
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ bgcolor: alpha(theme.palette.error.main, 0.1) }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'error.main' }}>
-            <Block /> Deshabilitar Usuario
+            <Delete /> Eliminar Usuario Permanentemente
           </Box>
         </DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ mt: 2 }}>
-            ¿Estás seguro de deshabilitar al usuario <strong>{userToDelete?.nombre}</strong>?
+            ¿Estás seguro de que deseas eliminar al usuario <strong>{userToDelete?.nombre}</strong>?
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ my: 1 }}>
-            El usuario no podrá ingresar al sistema hasta que lo vuelvas a habilitar.
+          <Typography variant="body2" color="text.secondary" sx={{ my: 2 }}>
+            <strong>⚠️ Advertencia:</strong> Esta acción es permanente e irreversible. El usuario será eliminado completamente de la base de datos.
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Esta acción es reversible. Puedes reactivar el usuario en cualquier momento.
+            El usuario no podrá acceder al sistema. Deberá registrarse nuevamente para crear una nueva cuenta.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setOpenDeleteDialog(false)}>Cancelar</Button>
           <Button variant="contained" color="error" onClick={handleDeleteConfirm}>
-            Deshabilitar
+            Eliminar Permanentemente
           </Button>
         </DialogActions>
       </Dialog>

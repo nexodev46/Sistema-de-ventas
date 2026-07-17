@@ -257,14 +257,25 @@ export const firebaseAuthService = {
     }
   },
 
-  // Eliminar cuenta de usuario (marca como inactivo en lugar de eliminar)
+  // Eliminar cuenta de usuario permanentemente
   deleteUserAccount: async (uid: string) => {
     try {
       const userRef = doc(db, 'usuarios', uid)
-      await updateDoc(userRef, { activo: false })
+      await deleteDoc(userRef)
+      
+      // Intentar eliminar la cuenta de Firebase Auth también
+      try {
+        const userAuth = auth.currentUser
+        if (userAuth && userAuth.uid === uid) {
+          await userAuth.delete()
+        }
+      } catch (authError) {
+        console.warn('No se pudo eliminar la cuenta de Firebase Auth:', authError)
+      }
+      
       return true
     } catch (error) {
-      console.error('Error deshabilitando usuario:', error)
+      console.error('Error eliminando usuario:', error)
       throw error
     }
   },

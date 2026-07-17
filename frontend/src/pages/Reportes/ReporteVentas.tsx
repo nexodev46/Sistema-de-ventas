@@ -284,7 +284,7 @@ export const ReporteVentas = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,
@@ -305,7 +305,7 @@ export const ReporteVentas = () => {
               variant="contained"
               startIcon={<Download />}
               onClick={() => setOpenExportDialog(true)}
-              sx={{ bgcolor: 'white', color: theme.palette.secondary.main, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+              sx={{ bgcolor: theme.palette.primary.main, color: 'white', '&:hover': { bgcolor: theme.palette.primary.dark } }}
             >
               Exportar
             </Button>
@@ -313,7 +313,7 @@ export const ReporteVentas = () => {
               variant="contained"
               startIcon={<Print />}
               onClick={handleExportPDF}
-              sx={{ bgcolor: 'white', color: theme.palette.secondary.main, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+              sx={{ bgcolor: theme.palette.primary.main, color: 'white', '&:hover': { bgcolor: theme.palette.primary.dark } }}
             >
               Imprimir
             </Button>

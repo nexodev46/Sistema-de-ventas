@@ -324,7 +324,7 @@ export const Empresa = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,
@@ -518,7 +518,7 @@ export const Empresa = () => {
                 </Step>
               ))}
             </Stepper>
-            
+
 
             <form onSubmit={handleSubmit}>
               {/* Paso 1: Información General */}
@@ -697,9 +697,9 @@ export const Empresa = () => {
                       <Chip icon={<WhatsApp />} label="WhatsApp" size="small" />
                     )}
                     {!formData.redesSociales?.facebook && !formData.redesSociales?.instagram &&
-                     !formData.redesSociales?.twitter && !formData.redesSociales?.whatsapp && (
-                      <Typography variant="caption" color="text.secondary">No hay redes sociales configuradas</Typography>
-                    )}
+                      !formData.redesSociales?.twitter && !formData.redesSociales?.whatsapp && (
+                        <Typography variant="caption" color="text.secondary">No hay redes sociales configuradas</Typography>
+                      )}
                   </Box>
 
                   <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
@@ -802,7 +802,7 @@ export const Empresa = () => {
                   </Box>
                 </motion.div>
               )}
-              
+
             </form>
           </Paper>
         </Grid>

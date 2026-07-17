@@ -184,7 +184,7 @@ const CategoriaCard = ({ categoria, onEdit, onDelete }: any) => {
               borderTopRightRadius: 12,
             }}
           />
-          
+
           <CardContent sx={{ pt: 3, pb: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
               <Avatar
@@ -362,7 +362,7 @@ export const ListadoCategorias = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,

@@ -16,66 +16,66 @@ import {
 } from '@mui/icons-material'
 
 const configModules = [
-  { 
-    title: 'Usuarios', 
-    icon: <People />, 
-    path: '/configuracion/usuarios', 
+  {
+    title: 'Usuarios',
+    icon: <People />,
+    path: '/configuracion/usuarios',
     description: 'Gestionar usuarios y roles del sistema',
     color: '#3b82f6',
     gradient: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
   },
-  { 
-    title: 'Empresa', 
-    icon: <Business />, 
-    path: '/configuracion/empresa', 
+  {
+    title: 'Empresa',
+    icon: <Business />,
+    path: '/configuracion/empresa',
     description: 'Datos de tu negocio, logo y contacto',
     color: '#10b981',
     gradient: 'linear-gradient(135deg, #10b981, #047857)',
   },
-  { 
-    title: 'Mi Perfil', 
-    icon: <Person />, 
-    path: '/configuracion/perfil', 
+  {
+    title: 'Mi Perfil',
+    icon: <Person />,
+    path: '/configuracion/perfil',
     description: 'Información personal y seguridad',
     color: '#8b5cf6',
     gradient: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
   },
-  { 
-    title: 'Seguridad', 
-    icon: <Security />, 
-    path: '/configuracion/seguridad', 
+  {
+    title: 'Seguridad',
+    icon: <Security />,
+    path: '/configuracion/seguridad',
     description: 'Cambiar contraseña, 2FA',
     color: '#f59e0b',
     gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
   },
-  { 
-    title: 'Notificaciones', 
-    icon: <Notifications />, 
-    path: '/configuracion/notificaciones', 
+  {
+    title: 'Notificaciones',
+    icon: <Notifications />,
+    path: '/configuracion/notificaciones',
     description: 'Alertas y emails',
     color: '#ec4899',
     gradient: 'linear-gradient(135deg, #ec4899, #be185d)',
   },
-  { 
-    title: 'Apariencia', 
-    icon: <Palette />, 
-    path: '/configuracion/apariencia', 
+  {
+    title: 'Apariencia',
+    icon: <Palette />,
+    path: '/configuracion/apariencia',
     description: 'Tema oscuro/claro',
     color: '#06b6d4',
     gradient: 'linear-gradient(135deg, #06b6d4, #0891b2)',
   },
-  { 
-    title: 'Facturación', 
-    icon: <Receipt />, 
-    path: '/configuracion/facturacion', 
+  {
+    title: 'Facturación',
+    icon: <Receipt />,
+    path: '/configuracion/facturacion',
     description: 'Configuración de facturas',
     color: '#ef4444',
     gradient: 'linear-gradient(135deg, #ef4444, #dc2626)',
   },
-  { 
-    title: 'Almacenamiento', 
-    icon: <LocalShipping />, 
-    path: '/configuracion/almacenamiento', 
+  {
+    title: 'Almacenamiento',
+    icon: <LocalShipping />,
+    path: '/configuracion/almacenamiento',
     description: 'Gestión de archivos y backups',
     color: '#78716c',
     gradient: 'linear-gradient(135deg, #78716c, #57534e)',
@@ -91,7 +91,7 @@ export const Configuracion = () => {
       {/* Header con gradiente */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.info.dark} 0%, ${theme.palette.info.main} 100%)`,
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           borderRadius: 4,
           p: 4,
           mb: 4,
