@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sistema-api
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:3000}
+      FIREBASE_API_KEY: ${FIREBASE_API_KEY}
+      FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET}
+      FIREBASE_MESSAGING_SENDER_ID: ${FIREBASE_MESSAGING_SENDER_ID}
+      FIREBASE_APP_ID: ${FIREBASE_APP_ID}
+      NODE_ENV: production
+    volumes:
+      - ./backend/uploads:/app/uploads
+    networks:
+      - sistema
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:4000/api}
+        VITE_FIREBASE_API_KEY: ${FIREBASE_API_KEY}
+        VITE_FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN}
+        VITE_FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+        VITE_FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET}
+        VITE_FIREBASE_MESSAGING_SENDER_ID: ${FIREBASE_MESSAGING_SENDER_ID}
+        VITE_FIREBASE_APP_ID: ${FIREBASE_APP_ID}
+    container_name: sistema-web
+    ports:
+      - "80:80"
+    networks:
+      - sistema
+    restart: unless-stopped
+
+networks:
+  sistema:
+    driver: bridge

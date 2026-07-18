@@ -108,7 +108,8 @@ export const Header = () => {
 
     const unsubscribe = listenNotificationEvents((notification) => {
       setNotifications((prev) => {
-        const next = [notification, ...prev].slice(0, 50)
+        // Evitar duplicados por ID
+        const next = [notification, ...prev.filter(n => n.id !== notification.id)].slice(0, 50)
         saveNotifications(next)
         return next
       })

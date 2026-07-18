@@ -4,14 +4,14 @@ import { getAuth } from "firebase/auth";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration - usar variables de entorno
 const firebaseConfig = {
-  apiKey: "AIzaSyD8mvVRey-15qFjXLsj3D1i0EzcX78mksw",
-  authDomain: "sistema-9431b.firebaseapp.com",
-  projectId: "sistema-9431b",
-  storageBucket: "sistema-9431b.appspot.com",
-  messagingSenderId: "302905239502",
-  appId: "1:302905239502:web:96e502306583aa8f3bed9f"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase

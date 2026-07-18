@@ -50,6 +50,23 @@ export const saveNotifications = (notifications: Notificacion[]) => {
 
 const generateId = (prefix: string, docId: string) => `${prefix}_${docId}_${Date.now()}`
 
+export const notificationTypeToEventId = (tipo: NotificationType) => {
+  switch (tipo) {
+    case 'VENTA':
+      return 'nueva_venta'
+    case 'STOCK_BAJO':
+      return 'stock_bajo'
+    case 'PRODUCTO_AGOTADO':
+      return 'producto_agotado'
+    case 'CLIENTE_NUEVO':
+      return 'nuevo_cliente'
+    case 'DEVOLUCION':
+      return 'devolucion'
+    default:
+      return ''
+  }
+}
+
 export const listenNotificationEvents = (
   onNewNotification: (notification: Notificacion) => void
 ) => {
@@ -115,7 +132,7 @@ export const listenNotificationEvents = (
     }
 
     snapshot.docChanges().forEach((change) => {
-      if (change.type === 'modified') {
+      if (change.type === 'added' || change.type === 'modified') {
         const producto = change.doc.data() as any
         const stockActual = Number(producto.stockActual ?? 0)
         const stockMinimo = Number(producto.stockMinimo ?? 0)
