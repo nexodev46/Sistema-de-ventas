@@ -44,7 +44,6 @@ import {
 } from '@mui/icons-material'
 import { useSidebar } from '../../contexts/SidebarContext'
 import { useAuth } from '../../contexts/AuthContext'
-import logoKaita from '../../assets/images/logo kaita.png'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../../services/firebase'
 
@@ -102,10 +101,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
 
     const handleLogoUpdated = (event: Event) => {
       const customEvent = event as CustomEvent<{ logo?: string; nombre?: string }>
-      if (customEvent.detail?.logo) {
-        setCompanyLogo(customEvent.detail.logo)
-        if (customEvent.detail.logo) {
-          window.localStorage.setItem(LOGO_STORAGE_KEY, customEvent.detail.logo)
+      if (customEvent.detail?.logo !== undefined) {
+        const logoValue = customEvent.detail.logo || null
+        setCompanyLogo(logoValue)
+        if (logoValue) {
+          window.localStorage.setItem(LOGO_STORAGE_KEY, logoValue)
         } else {
           window.localStorage.removeItem(LOGO_STORAGE_KEY)
         }
@@ -266,16 +266,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
               boxShadow: '0 12px 30px rgba(0, 0, 0, 0.12)',
             }}
           >
-            <Box
-              component="img"
-              src={companyLogo || logoKaita}
-              alt="Logo Kaita"
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-              }}
-            />
+            {companyLogo ? (
+              <Box
+                component="img"
+                src={companyLogo}
+                alt="Logo de la empresa"
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                }}
+              />
+            ) : (
+              <BusinessIcon sx={{ color: theme.palette.primary.main, fontSize: collapsed && !isMobile ? 20 : 28 }} />
+            )}
           </Box>
           {!collapsed && !isMobile && (
             <Typography

@@ -24,6 +24,7 @@ import {
   getDocs
 } from 'firebase/firestore'
 import { auth, db } from './firebase'
+import api from './api'
 
 export interface UserData {
   uid: string
@@ -128,6 +129,18 @@ export const firebaseAuthService = {
   // Iniciar sesión
   login: async (email: string, password: string, rememberMe = false) => {
     try {
+      // Consultar al backend si el email/IP está permitido (protección server-side)
+      try {
+        const resp = await api.post('/auth/check', { email })
+        if (resp && resp.data && resp.data.allowed === false) {
+          const err: any = new Error('Demasiados intentos fallidos. Intenta de nuevo más tarde.')
+          err.code = 'auth/temporarily-blocked'
+          throw err
+        }
+      } catch (checkErr) {
+        // Si el check falla por red, no bloquear el login para evitar denegación accidental.
+        console.warn('Auth check failed, proceeding with login:', checkErr)
+      }
       await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence)
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       const user = userCredential.user
@@ -154,6 +167,13 @@ export const firebaseAuthService = {
       
       // Generar token
       const token = await user.getIdToken()
+
+      // Notificar éxito al backend para resetear contador
+      try {
+        await api.post('/auth/success', { email })
+      } catch (notifyErr) {
+        console.warn('No se pudo notificar éxito de login al backend:', notifyErr)
+      }
       
       return { 
         user, 
@@ -161,6 +181,12 @@ export const firebaseAuthService = {
         token 
       }
     } catch (error) {
+      // Notificar intento fallido al backend (no bloquear si el backend falla)
+      try {
+        await api.post('/auth/failed', { email })
+      } catch (notifyErr) {
+        console.warn('No se pudo notificar fallo de login al backend:', notifyErr)
+      }
       console.error('Error en login:', error)
       throw error
     }

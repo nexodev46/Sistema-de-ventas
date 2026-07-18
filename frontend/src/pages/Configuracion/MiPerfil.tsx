@@ -167,6 +167,27 @@ export const MiPerfil = () => {
     }
   }
 
+  const handleEliminarFoto = async () => {
+    if (!userData.fotoURL) return
+    setUploading(true)
+    try {
+      const userRef = doc(db, 'usuarios', auth.currentUser?.uid || '')
+      await updateDoc(userRef, { fotoURL: '' })
+
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, { photoURL: '' })
+      }
+
+      setUserData(prev => ({ ...prev, fotoURL: '' }))
+      enqueueSnackbar('Foto de perfil eliminada', { variant: 'success' })
+    } catch (error) {
+      console.error('Error eliminando foto:', error)
+      enqueueSnackbar('No se pudo eliminar la foto', { variant: 'error' })
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const handleGuardarPerfil = async () => {
     setSaving(true)
     try {
@@ -277,46 +298,31 @@ export const MiPerfil = () => {
         </Typography>
       </Box>
 
+      
+
       <Grid container spacing={3}>
         {/* Columna izquierda - Avatar e información */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ borderRadius: 3, overflow: 'hidden', position: 'sticky', top: 20 }}>
+          <Card sx={{ borderRadius: 3, overflow: 'hidden', position: 'sticky', top: 20, boxShadow: '0 30px 60px rgba(15, 23, 42, 0.16)' }}>
             <Box
               sx={{
-                background: `linear-gradient(135deg, ${alpha(getRolColor(), 0.15)} 0%, ${alpha(getRolColor(), 0.05)} 100%)`,
+                background: `linear-gradient(135deg, ${alpha(getRolColor(), 0.18)} 0%, ${alpha(getRolColor(), 0.06)} 100%)`,
                 p: 4,
                 textAlign: 'center',
+                borderBottom: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
               }}
             >
-              <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                badgeContent={
-                  <Tooltip title="Cambiar foto">
-                    <IconButton
-                      component="label"
-                      sx={{
-                        bgcolor: 'white',
-                        boxShadow: 2,
-                        '&:hover': { bgcolor: 'white' },
-                      }}
-                    >
-                      <PhotoCamera fontSize="small" />
-                      <input type="file" hidden accept="image/*" onChange={handleFotoUpload} />
-                    </IconButton>
-                  </Tooltip>
-                }
-              >
-                <Box sx={{ position: 'relative', width: 120, height: 120, mx: 'auto', mb: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, pb: 2, borderBottom: `1px solid ${alpha(theme.palette.text.primary, 0.08)}` }}>
+                <Box sx={{ position: 'relative', width: 132, height: 132, mx: 'auto' }}>
                   <Avatar
                     src={userData.fotoURL}
                     sx={{
-                      width: 120,
-                      height: 120,
-                      border: `4px solid ${getRolColor()}`,
-                      boxShadow: 4,
+                      width: 132,
+                      height: 132,
+                      border: `4px solid ${alpha(getRolColor(), 0.8)}`,
+                      boxShadow: '0 25px 50px rgba(15, 23, 42, 0.18)',
                       bgcolor: getRolColor(),
-                      fontSize: 48,
+                      fontSize: 52,
                     }}
                   >
                     {!userData.fotoURL && userData.nombre?.charAt(0).toUpperCase()}
@@ -345,7 +351,45 @@ export const MiPerfil = () => {
                     </Box>
                   )}
                 </Box>
-              </Badge>
+
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+                  <Tooltip title="Cambiar foto">
+                    <IconButton
+                      component="label"
+                      sx={{
+                        bgcolor: theme.palette.background.paper,
+                        color: theme.palette.text.primary,
+                        width: 44,
+                        height: 44,
+                        borderRadius: 2,
+                        boxShadow: '0 14px 28px rgba(15, 23, 42, 0.08)',
+                        '&:hover': { bgcolor: alpha(theme.palette.background.paper, 0.92) },
+                      }}
+                    >
+                      <PhotoCamera fontSize="small" />
+                      <input type="file" hidden accept="image/*" onChange={handleFotoUpload} />
+                    </IconButton>
+                  </Tooltip>
+                  {userData.fotoURL && (
+                    <Tooltip title="Eliminar foto">
+                      <IconButton
+                        onClick={handleEliminarFoto}
+                        sx={{
+                          bgcolor: theme.palette.background.paper,
+                          color: theme.palette.text.primary,
+                          width: 44,
+                          height: 44,
+                          borderRadius: 2,
+                          boxShadow: '0 14px 28px rgba(15, 23, 42, 0.08)',
+                          '&:hover': { bgcolor: alpha(theme.palette.background.paper, 0.92) },
+                        }}
+                      >
+                        <Close fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
+              </Box>
 
               <Typography variant="h5" fontWeight="bold" gutterBottom>
                 {userData.nombre}

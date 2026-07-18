@@ -50,6 +50,7 @@ import { db } from '../../services/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSnackbar } from 'notistack'
 import { motion } from 'framer-motion'
+ 
 
 // Tipos de eventos para notificaciones
 const eventosNotificacion = [

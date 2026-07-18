@@ -58,6 +58,7 @@ import { ref, deleteObject } from 'firebase/storage'
 import { cloudinaryService } from '../../services/cloudinaryService'
 import { useSnackbar } from 'notistack'
 import { motion } from 'framer-motion'
+ 
 
 interface EmpresaData {
   nombre: string
@@ -388,7 +389,7 @@ export const Empresa = () => {
                 }}
               >
                 <Avatar
-                  src={formData.logoPreview || formData.logo}
+                  src={formData.logoPreview || formData.logo || undefined}
                   imgProps={{ crossOrigin: 'anonymous' }}
                   sx={{
                     width: 120,

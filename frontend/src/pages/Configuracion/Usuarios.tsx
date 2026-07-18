@@ -71,6 +71,7 @@ import { useSnackbar } from 'notistack'
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../../services/firebase'
 import { motion } from 'framer-motion'
+ 
 
 // Componente de tarjeta de estadística
 const StatCard = ({ title, value, icon, color, delay = 0 }: any) => {

@@ -136,9 +136,9 @@ export const Header = () => {
     const unsubscribe = onSnapshot(userRef, (doc) => {
       if (doc.exists()) {
         const data = doc.data()
-        if (data.fotoURL) {
-          setUserPhotoURL(data.fotoURL)
-        }
+        setUserPhotoURL(data.fotoURL || null)
+      } else {
+        setUserPhotoURL(null)
       }
     })
 
@@ -544,6 +544,8 @@ export const Header = () => {
                 <ListItemIcon><DashboardIcon fontSize="small" /></ListItemIcon>
                 <ListItemText>Dashboard</ListItemText>
               </MenuItem>
+
+              
 
               {user?.rol === 'ADMIN' && (
                 <MenuItem onClick={() => { handleMenuClose(); navigate('/configuracion'); }}>

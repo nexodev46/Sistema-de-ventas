@@ -347,6 +347,8 @@ export const Almacenamiento = () => {
         </Typography>
       </Box>
 
+      
+
       <Grid container spacing={3}>
         {/* Columna izquierda - Espacio y carpetas */}
         <Grid item xs={12} md={4}>

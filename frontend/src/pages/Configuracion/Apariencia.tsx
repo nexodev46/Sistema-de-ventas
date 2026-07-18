@@ -47,6 +47,7 @@ import { db } from '../../services/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSnackbar } from 'notistack'
 import { motion } from 'framer-motion'
+ 
 
 // Colores predefinidos
 const coloresPrimarios = [
@@ -58,6 +59,20 @@ const coloresPrimarios = [
   { nombre: 'Oro Satinado', valor: '#f59e0b' },
   { nombre: 'Malva Suave', valor: '#a78bfa' },
   { nombre: 'Grafito Cálido', valor: '#64748b' },
+  { nombre: 'Aqua Elegante', valor: '#5eead4' },
+  { nombre: 'Champán Suave', valor: '#fbe7c6' },
+  { nombre: 'Mauve Profundo', valor: '#9d7cd8' },
+  { nombre: 'Azul Noche', valor: '#0f172a' },
+  { nombre: 'Verde Fosco', valor: '#16a34a' },
+  { nombre: 'Crema Premium', valor: '#f8fafc' },
+  { nombre: 'Granate Real', valor: '#8b1b3f' },
+  { nombre: 'Jade Brillante', valor: '#10b981' },
+  { nombre: 'Zafiro Eléctrico', valor: '#2563eb' },
+  { nombre: 'Bronce Luminoso', valor: '#a16207' },
+  { nombre: 'Rosa Magnético', valor: '#ec4899' },
+  { nombre: 'Verde Esmeralda', valor: '#047857' },
+  { nombre: 'Noche Estelar', valor: '#0f172a' },
+  { nombre: 'Amatista Lujosa', valor: '#7c3aed' },
 ]
 
 // Tamaños de fuente
@@ -84,7 +99,7 @@ const vistasDashboard = [
 
 export const Apariencia = () => {
   const theme = useTheme()
-  const { darkMode, toggleDarkMode, setDarkMode, primaryColor, setPrimaryColor } = useThemeMode()
+  const { darkMode, toggleDarkMode, setDarkMode, primaryColor, setPrimaryColor, mostrarAnimaciones, setMostrarAnimaciones, reducirMovimiento, setReducirMovimiento } = useThemeMode()
   const { setCollapsed } = useSidebar()
   const { user } = useAuth()
   const { enqueueSnackbar } = useSnackbar()
@@ -132,6 +147,8 @@ export const Apariencia = () => {
             setConfiguracion(apariencia)
             setDarkMode(apariencia.modoOscuro)
             setPrimaryColor(apariencia.colorPrimario)
+            setMostrarAnimaciones(apariencia.mostrarAnimaciones)
+            setReducirMovimiento(apariencia.reducirMovimiento)
             setCollapsed(apariencia.sidebarColapsado)
             document.documentElement.style.setProperty('--primary-color', apariencia.colorPrimario)
           }
@@ -165,6 +182,8 @@ export const Apariencia = () => {
       })
       setDarkMode(configuracion.modoOscuro)
       setPrimaryColor(configuracion.colorPrimario)
+      setMostrarAnimaciones(configuracion.mostrarAnimaciones)
+      setReducirMovimiento(configuracion.reducirMovimiento)
       setCollapsed(configuracion.sidebarColapsado)
       document.documentElement.style.setProperty('--primary-color', configuracion.colorPrimario)
       // Guardar en localStorage para persistencia
@@ -201,9 +220,13 @@ export const Apariencia = () => {
     setConfiguracion(defaults)
     setDarkMode(defaults.modoOscuro)
     setPrimaryColor(defaults.colorPrimario)
+    setMostrarAnimaciones(defaults.mostrarAnimaciones)
+    setReducirMovimiento(defaults.reducirMovimiento)
     setCollapsed(defaults.sidebarColapsado)
     document.documentElement.style.setProperty('--primary-color', defaults.colorPrimario)
     localStorage.setItem('primaryColor', defaults.colorPrimario)
+    localStorage.setItem('mostrarAnimaciones', defaults.mostrarAnimaciones.toString())
+    localStorage.setItem('reducirMovimiento', defaults.reducirMovimiento.toString())
     enqueueSnackbar('Configuración restablecida', { variant: 'info' })
   }
 
@@ -371,7 +394,10 @@ export const Apariencia = () => {
               control={
                 <Switch
                   checked={configuracion.mostrarAnimaciones}
-                  onChange={(e) => setConfiguracion(prev => ({ ...prev, mostrarAnimaciones: e.target.checked }))}
+                  onChange={(e) => {
+                    setConfiguracion(prev => ({ ...prev, mostrarAnimaciones: e.target.checked }))
+                    setMostrarAnimaciones(e.target.checked)
+                  }}
                 />
               }
               label="Mostrar animaciones"
@@ -381,7 +407,10 @@ export const Apariencia = () => {
               control={
                 <Switch
                   checked={configuracion.reducirMovimiento}
-                  onChange={(e) => setConfiguracion(prev => ({ ...prev, reducirMovimiento: e.target.checked }))}
+                  onChange={(e) => {
+                    setConfiguracion(prev => ({ ...prev, reducirMovimiento: e.target.checked }))
+                    setReducirMovimiento(e.target.checked)
+                  }}
                 />
               }
               label="Reducir movimiento (accesibilidad)"

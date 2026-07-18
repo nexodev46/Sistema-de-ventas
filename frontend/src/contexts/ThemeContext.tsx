@@ -8,6 +8,10 @@ interface ThemeContextType {
   setDarkMode: (value: boolean) => void
   primaryColor: string
   setPrimaryColor: (color: string) => void
+  mostrarAnimaciones: boolean
+  setMostrarAnimaciones: (value: boolean) => void
+  reducirMovimiento: boolean
+  setReducirMovimiento: (value: boolean) => void
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -33,6 +37,16 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return '#06b6d4'
   })
 
+  const [mostrarAnimaciones, setMostrarAnimacionesState] = useState(() => {
+    const saved = localStorage.getItem('mostrarAnimaciones')
+    return saved === null ? true : saved === 'true'
+  })
+
+  const [reducirMovimiento, setReducirMovimientoState] = useState(() => {
+    const saved = localStorage.getItem('reducirMovimiento')
+    return saved === 'true'
+  })
+
   useEffect(() => {
     localStorage.setItem('darkMode', darkMode.toString())
   }, [darkMode])
@@ -41,13 +55,27 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('primaryColor', primaryColor)
   }, [primaryColor])
 
+  useEffect(() => {
+    localStorage.setItem('mostrarAnimaciones', mostrarAnimaciones.toString())
+  }, [mostrarAnimaciones])
+
+  useEffect(() => {
+    localStorage.setItem('reducirMovimiento', reducirMovimiento.toString())
+  }, [reducirMovimiento])
+
   const toggleDarkMode = () => setDarkModeState(prev => !prev)
   const setDarkMode = (value: boolean) => setDarkModeState(value)
   const setPrimaryColor = (color: string) => setPrimaryColorState(color)
+  const setMostrarAnimaciones = (value: boolean) => setMostrarAnimacionesState(value)
+  const setReducirMovimiento = (value: boolean) => setReducirMovimientoState(value)
 
   const theme = useMemo(() => {
     const primaryLight = lighten(primaryColor, 0.16)
     const primaryDark = darken(primaryColor, 0.16)
+    const buttonTransition = mostrarAnimaciones && !reducirMovimiento
+      ? 'transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease'
+      : 'none'
+    const buttonHoverTransform = mostrarAnimaciones && !reducirMovimiento ? 'translateY(-1px)' : 'none'
 
     return createTheme({
       palette: {
@@ -129,16 +157,24 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             root: {
               textTransform: 'none',
               borderRadius: 10,
+              transition: buttonTransition,
+              '&:hover': {
+                transform: buttonHoverTransform,
+              },
             },
             containedPrimary: ({ theme: buttonTheme }) => ({
               backgroundColor: buttonTheme.palette.mode === 'dark'
                 ? darken(buttonTheme.palette.primary.main, 0.22)
                 : buttonTheme.palette.primary.main,
               color: buttonTheme.palette.primary.contrastText,
+              boxShadow: mostrarAnimaciones && !reducirMovimiento
+                ? `0 16px 40px ${buttonTheme.palette.primary.main}33`
+                : 'none',
               '&:hover': {
                 backgroundColor: buttonTheme.palette.mode === 'dark'
                   ? darken(buttonTheme.palette.primary.main, 0.32)
                   : buttonTheme.palette.primary.dark,
+                transform: buttonHoverTransform,
               },
             }),
             containedSecondary: ({ theme: buttonTheme }) => ({
@@ -150,6 +186,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 backgroundColor: buttonTheme.palette.mode === 'dark'
                   ? darken(buttonTheme.palette.secondary.main, 0.32)
                   : buttonTheme.palette.secondary.dark,
+                transform: buttonHoverTransform,
               },
             }),
             outlinedPrimary: ({ theme: buttonTheme }) => ({
@@ -157,6 +194,9 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 ? buttonTheme.palette.divider
                 : buttonTheme.palette.primary.main,
               color: buttonTheme.palette.text.primary,
+              '&:hover': {
+                transform: buttonHoverTransform,
+              },
             }),
           },
         },
@@ -180,7 +220,17 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [darkMode, primaryColor])
 
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleDarkMode, setDarkMode, primaryColor, setPrimaryColor }}>
+    <ThemeContext.Provider value={{
+      darkMode,
+      toggleDarkMode,
+      setDarkMode,
+      primaryColor,
+      setPrimaryColor,
+      mostrarAnimaciones,
+      setMostrarAnimaciones,
+      reducirMovimiento,
+      setReducirMovimiento,
+    }}>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
         {children}
