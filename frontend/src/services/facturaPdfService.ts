@@ -83,7 +83,7 @@ export const facturaPdfService = {
   ): string => {
     // Obtener productos de venta - intentar múltiples fuentes
     const productos = venta.items || venta.productos || []
-    
+
     // Calcular subtotal basado en los productos disponibles
     let subtotal = 0
     if (productos.length > 0) {
@@ -172,16 +172,15 @@ export const facturaPdfService = {
                 <td style="padding: 10px; text-align: left; font-size: 13px;">Subtotal:</td>
                 <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 13px;">${config.factura.simbolo}${subtotal.toFixed(2)}</td>
               </tr>
-              ${
-                config.factura.incluirIgv
-                  ? `
+              ${config.factura.incluirIgv
+        ? `
               <tr style="background-color: #f0f7ff; border-bottom: 1px solid #ddd;">
                 <td style="padding: 10px; text-align: left; font-size: 13px;">${config.factura.ivaNombre} (${config.factura.iva}%):</td>
                 <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 13px; color: #1976d2;">${config.factura.simbolo}${impuestos.toFixed(2)}</td>
               </tr>
             `
-                  : ''
-              }
+        : ''
+      }
               <tr style="border-top: 3px solid #1976d2; background-color: #1976d2; color: white;">
                 <td style="padding: 15px; text-align: left; font-weight: bold; font-size: 16px;">TOTAL:</td>
                 <td style="padding: 15px; text-align: right; font-weight: bold; font-size: 18px;">${config.factura.simbolo}${totalConImpuestos.toFixed(2)}</td>
@@ -193,11 +192,10 @@ export const facturaPdfService = {
         <!-- Información adicional -->
         <div style="border-top: 1px solid #ddd; padding-top: 20px; margin-top: 20px;">
           <p style="margin: 8px 0; text-align: center; font-size: 13px; color: #333; font-style: italic;">"${config.factura.piePagina || '¡Gracias por su compra!'}"</p>
-          ${
-            config.factura.terminos
-              ? `<p style="margin: 8px 0; text-align: center; color: #999; font-size: 11px;">${config.factura.terminos}</p>`
-              : ''
-          }
+          ${config.factura.terminos
+        ? `<p style="margin: 8px 0; text-align: center; color: #999; font-size: 11px;">${config.factura.terminos}</p>`
+        : ''
+      }
           <p style="margin-top: 15px; text-align: center; color: #999; font-size: 10px;">Documento generado automáticamente el ${new Date().toLocaleString('es-PE')}</p>
         </div>
       </div>

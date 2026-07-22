@@ -225,7 +225,7 @@ export const Login = () => {
       .leftFooter{font-size:15px;opacity:0.95;margin-bottom:20px}
 
       .rightPane{flex:0 0 42%;display:flex;align-items:center;justify-content:center;padding:64px}
-      .glassPanel{position:relative;overflow:hidden;max-width:520px;width:100%;border-radius:28px;padding:44px 44px;background:linear-gradient(180deg, rgba(6,10,22,0.72), rgba(10,14,28,0.6));backdrop-filter:blur(100px);border:1px solid rgba(173,216,230,0.12);box-shadow:0 50px 140px rgba(2,6,23,0.6), 0 8px 30px rgba(37,99,235,0.06), inset 0 0 28px rgba(56,189,248,0.03);color:#fff;transition:box-shadow .35s,transform .35s}
+      .glassPanel{position:relative;overflow:hidden;max-width:520px;width:100%;border-radius:28px;padding:44px 44px;background:linear-gradient(180deg, rgba(6,10,22,0.72), rgba(10,14,28,0.6));backdrop-filter:blur(100px);border:1.5px solid rgba(173,216,230,0.22);box-shadow:0 50px 140px rgba(2,6,23,0.6), 0 8px 30px rgba(37,99,235,0.06), inset 0 0 28px rgba(56,189,248,0.03), 0 0 0 1px rgba(255,255,255,0.04);color:#fff;transition:box-shadow .35s,transform .35s}
       .glassPanel::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01) 40%, rgba(255,255,255,0) 100%);opacity:0.45;pointer-events:none;mix-blend-mode:screen;filter:blur(6px)}
       .glassPanel::after{content:'';position:absolute;inset:-14%;background:radial-gradient(circle at 20% 20%, rgba(56,189,248,0.06), transparent 20%),radial-gradient(circle at 80% 80%, rgba(124,58,237,0.05), transparent 20%);opacity:0.26;pointer-events:none;animation:waterRipples 14s ease-in-out infinite}
       .glassPanel:hover{box-shadow:0 60px 180px rgba(2,6,23,0.7), 0 18px 60px rgba(37,99,235,0.12);transform:translateY(-4px)}

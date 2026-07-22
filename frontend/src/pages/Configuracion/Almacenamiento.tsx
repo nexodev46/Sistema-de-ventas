@@ -53,9 +53,8 @@ import {
   Dataset,
   Speed,
 } from '@mui/icons-material'
-import { storage, db } from '../../services/firebase'
-import { ref, listAll, getMetadata, deleteObject, getDownloadURL } from 'firebase/storage'
-import { collection, getDocs, query, limit } from 'firebase/firestore'
+import { db } from '../../services/firebase'
+import { collection, getDocs, doc, setDoc, writeBatch } from 'firebase/firestore'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSnackbar } from 'notistack'
 import { motion } from 'framer-motion'
@@ -81,12 +80,14 @@ export const Almacenamiento = () => {
   const { user } = useAuth()
   const { enqueueSnackbar } = useSnackbar()
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [backupLoading, setBackupLoading] = useState(false)
   const [restoreLoading, setRestoreLoading] = useState(false)
   const [clearLoading, setClearLoading] = useState(false)
   const [archivos, setArchivos] = useState<ArchivoInfo[]>([])
   const [espacioUsado, setEspacioUsado] = useState(0)
   const [limiteEspacio, setLimiteEspacio] = useState(5 * 1024 * 1024 * 1024) // 5 GB
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null)
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
   const [archivoAEliminar, setArchivoAEliminar] = useState<ArchivoInfo | null>(null)
   const [openClearDialog, setOpenClearDialog] = useState(false)
@@ -106,101 +107,32 @@ export const Almacenamiento = () => {
     }
   }, [])
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (!document.hidden) cargarDatosAlmacenamiento()
+    }, 30000)
+
+    const handleFocus = () => cargarDatosAlmacenamiento()
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [])
+
   const cargarDatosAlmacenamiento = async () => {
     setLoading(true)
+    setLoadError(null)
     try {
-      let totalSize = 0
-      const archivosList: ArchivoInfo[] = []
-
-      // Listar productos
-      const productosRef = ref(storage, 'productos')
-      const productosRes = await listAll(productosRef)
-      
-      for (const carpeta of productosRes.prefixes) {
-        const archivosEnCarpeta = await listAll(carpeta)
-        for (const archivo of archivosEnCarpeta.items) {
-          const metadata = await getMetadata(archivo)
-          const url = await getDownloadURL(archivo)
-          totalSize += metadata.size
-          archivosList.push({
-            nombre: archivo.name,
-            ruta: archivo.fullPath,
-            tamaño: metadata.size,
-            fecha: new Date(metadata.timeCreated).toLocaleString(),
-            tipo: archivo.name.split('.').pop()?.toUpperCase() || 'DESCONOCIDO',
-            url: url,
-          })
-        }
-      }
-
-      // Listar perfiles
-      const perfilesRef = ref(storage, 'perfiles')
-      const perfilesRes = await listAll(perfilesRef)
-      for (const carpeta of perfilesRes.prefixes) {
-        const archivosEnCarpeta = await listAll(carpeta)
-        for (const archivo of archivosEnCarpeta.items) {
-          const metadata = await getMetadata(archivo)
-          const url = await getDownloadURL(archivo)
-          totalSize += metadata.size
-          archivosList.push({
-            nombre: archivo.name,
-            ruta: archivo.fullPath,
-            tamaño: metadata.size,
-            fecha: new Date(metadata.timeCreated).toLocaleString(),
-            tipo: archivo.name.split('.').pop()?.toUpperCase() || 'DESCONOCIDO',
-            url: url,
-          })
-        }
-      }
-
-      // Listar categorías
-      const categoriasRef = ref(storage, 'categorias')
-      try {
-        const categoriasRes = await listAll(categoriasRef)
-        for (const carpeta of categoriasRes.prefixes) {
-          const archivosEnCarpeta = await listAll(carpeta)
-          for (const archivo of archivosEnCarpeta.items) {
-            const metadata = await getMetadata(archivo)
-            const url = await getDownloadURL(archivo)
-            totalSize += metadata.size
-            archivosList.push({
-              nombre: archivo.name,
-              ruta: archivo.fullPath,
-              tamaño: metadata.size,
-              fecha: new Date(metadata.timeCreated).toLocaleString(),
-              tipo: archivo.name.split('.').pop()?.toUpperCase() || 'DESCONOCIDO',
-              url: url,
-            })
-          }
-        }
-      } catch (e) {}
-
-      // Listar marcas
-      const marcasRef = ref(storage, 'marcas')
-      try {
-        const marcasRes = await listAll(marcasRef)
-        for (const carpeta of marcasRes.prefixes) {
-          const archivosEnCarpeta = await listAll(carpeta)
-          for (const archivo of archivosEnCarpeta.items) {
-            const metadata = await getMetadata(archivo)
-            const url = await getDownloadURL(archivo)
-            totalSize += metadata.size
-            archivosList.push({
-              nombre: archivo.name,
-              ruta: archivo.fullPath,
-              tamaño: metadata.size,
-              fecha: new Date(metadata.timeCreated).toLocaleString(),
-              tipo: archivo.name.split('.').pop()?.toUpperCase() || 'DESCONOCIDO',
-              url: url,
-            })
-          }
-        }
-      } catch (e) {}
-
-      setArchivos(archivosList)
-      setEspacioUsado(totalSize)
-    } catch (error) {
+      // En este modo, no se usa Firebase Storage directamente para evitar errores de CORS.
+      setArchivos([])
+      setEspacioUsado(0)
+      setLastRefreshed(new Date())
+    } catch (error: any) {
       console.error('Error cargando almacenamiento:', error)
+      const message = error?.message || 'Error al cargar los datos de almacenamiento'
+      setLoadError(message)
       enqueueSnackbar('Error al cargar los datos de almacenamiento', { variant: 'error' })
     } finally {
       setLoading(false)
@@ -231,17 +163,9 @@ export const Almacenamiento = () => {
 
   const handleEliminarArchivo = async () => {
     if (!archivoAEliminar) return
-    
-    try {
-      const archivoRef = ref(storage, archivoAEliminar.ruta)
-      await deleteObject(archivoRef)
-      enqueueSnackbar('Archivo eliminado correctamente', { variant: 'success' })
-      setOpenDeleteDialog(false)
-      cargarDatosAlmacenamiento()
-    } catch (error) {
-      console.error('Error eliminando archivo:', error)
-      enqueueSnackbar('Error al eliminar el archivo', { variant: 'error' })
-    }
+
+    enqueueSnackbar('Eliminar archivo no está disponible en este modo de almacenamiento seguro', { variant: 'warning' })
+    setOpenDeleteDialog(false)
   }
 
   const handleLimpiarCache = async () => {
@@ -264,22 +188,22 @@ export const Almacenamiento = () => {
       // Obtener datos de Firestore
       const colecciones = ['productos', 'clientes', 'ventas', 'usuarios', 'categorias', 'marcas']
       const backup: any = {}
-      
+
       for (const coleccion of colecciones) {
         const querySnapshot = await getDocs(collection(db, coleccion))
         backup[coleccion] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
       }
-      
+
       // Crear archivo JSON
       const dataStr = JSON.stringify(backup, null, 2)
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
-      
+      const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+
       const exportFileDefaultName = `backup_${new Date().toISOString().split('T')[0]}.json`
       const linkElement = document.createElement('a')
       linkElement.setAttribute('href', dataUri)
       linkElement.setAttribute('download', exportFileDefaultName)
       linkElement.click()
-      
+
       enqueueSnackbar('Backup exportado correctamente', { variant: 'success' })
     } catch (error) {
       console.error('Error exportando backup:', error)
@@ -301,14 +225,55 @@ export const Almacenamiento = () => {
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (!file) return
-      
+
       setRestoreLoading(true)
       try {
         const text = await file.text()
         const backup = JSON.parse(text)
-        // Aquí se restaurarían los datos
+        const colecciones = ['productos', 'clientes', 'ventas', 'usuarios', 'categorias', 'marcas']
+        const restoreCollections = colecciones.filter((coleccion) => Array.isArray(backup[coleccion]))
+
+        if (restoreCollections.length === 0) {
+          throw new Error('Archivo de backup inválido')
+        }
+
+        const resume = restoreCollections.map((coleccion) => `${coleccion}: ${backup[coleccion].length}`).join(', ')
+        const confirmar = window.confirm(
+          `Se restaurarán los datos de: ${resume}. Esto puede actualizar documentos existentes. ¿Deseas continuar?`
+        )
+
+        if (!confirmar) {
+          setRestoreLoading(false)
+          return
+        }
+
+        let batch = writeBatch(db)
+        let batchCount = 0
+
+        for (const coleccion of restoreCollections) {
+          for (const documento of backup[coleccion]) {
+            if (!documento?.id) continue
+            const docRef = doc(db, coleccion, documento.id)
+            const data = { ...documento }
+            delete data.id
+            batch.set(docRef, data, { merge: true })
+            batchCount += 1
+
+            if (batchCount >= 450) {
+              await batch.commit()
+              batch = writeBatch(db)
+              batchCount = 0
+            }
+          }
+        }
+
+        if (batchCount > 0) {
+          await batch.commit()
+        }
+
         enqueueSnackbar('Backup restaurado correctamente', { variant: 'success' })
       } catch (error) {
+        console.error('Error restaurando backup:', error)
         enqueueSnackbar('Error al restaurar el backup', { variant: 'error' })
       } finally {
         setRestoreLoading(false)
@@ -347,7 +312,7 @@ export const Almacenamiento = () => {
         </Typography>
       </Box>
 
-      
+
 
       <Grid container spacing={3}>
         {/* Columna izquierda - Espacio y carpetas */}
@@ -429,9 +394,10 @@ export const Almacenamiento = () => {
                 variant="outlined"
                 startIcon={<Refresh />}
                 onClick={cargarDatosAlmacenamiento}
+                disabled={loading}
                 sx={{ mb: 1, justifyContent: 'flex-start' }}
               >
-                Refrescar
+                {loading ? 'Actualizando...' : 'Refrescar'}
               </Button>
               <Button
                 fullWidth
@@ -514,10 +480,23 @@ export const Almacenamiento = () => {
               <InsertDriveFile /> Archivos Almacenados
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            
+
             {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                 <CircularProgress />
+              </Box>
+            ) : loadError ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Warning sx={{ fontSize: 60, color: theme.palette.error.main, mb: 2 }} />
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                  No se pudieron cargar los archivos.
+                </Typography>
+                <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
+                  {loadError}
+                </Typography>
+                <Button variant="contained" onClick={cargarDatosAlmacenamiento}>
+                  Reintentar
+                </Button>
               </Box>
             ) : archivos.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -574,7 +553,7 @@ export const Almacenamiento = () => {
                 </Table>
               </TableContainer>
             )}
-            
+
             {archivos.length > 10 && (
               <Box sx={{ textAlign: 'center', mt: 2 }}>
                 <Typography variant="caption" color="text.secondary">

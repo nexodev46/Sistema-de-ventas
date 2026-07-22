@@ -65,6 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
   const isAdmin = user?.rol === 'ADMIN'
   const [companyLogo, setCompanyLogo] = useState<string | null>(null)
   const [companyName, setCompanyName] = useState<string | null>(null)
+  const hasCompanyLogo = Boolean(companyLogo?.trim())
 
   useEffect(() => {
     const localLogo = window.localStorage.getItem(LOGO_STORAGE_KEY)
@@ -82,10 +83,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
         const docSnap = await getDoc(docRef)
         if (docSnap.exists()) {
           const data = docSnap.data() as { logo?: string; logoPreview?: string; nombre?: string }
-          const logo = data.logo || data.logoPreview
+          const logo = (data.logo || data.logoPreview || '').toString().trim()
           if (logo) {
             setCompanyLogo(logo)
             window.localStorage.setItem(LOGO_STORAGE_KEY, logo)
+          } else {
+            setCompanyLogo(null)
+            window.localStorage.removeItem(LOGO_STORAGE_KEY)
           }
           if (data.nombre) {
             setCompanyName(data.nombre)
@@ -266,7 +270,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
               boxShadow: '0 12px 30px rgba(0, 0, 0, 0.12)',
             }}
           >
-            {companyLogo ? (
+            {hasCompanyLogo ? (
               <Box
                 component="img"
                 src={companyLogo}
@@ -281,7 +285,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
               <BusinessIcon sx={{ color: theme.palette.primary.main, fontSize: collapsed && !isMobile ? 20 : 28 }} />
             )}
           </Box>
-          {!collapsed && !isMobile && (
+          {!collapsed && !isMobile && companyName?.trim() && (
             <Typography
               variant="subtitle1"
               sx={{
@@ -293,7 +297,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
                 textShadow: '0 1px 3px rgba(0,0,0,0.12)',
               }}
             >
-              {companyName || 'Sistema de Ventas'}
+              {companyName.trim()}
             </Typography>
           )}
         </Box>
@@ -373,22 +377,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
                 <ListItemButton
                   onClick={handleLogout}
                   sx={{
-                    minHeight: 36,
-                    py: 1,
-                    px: 2,
+                    minHeight: 32,
+                    py: 0.75,
+                    px: 1.6,
                     justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
-                    borderRadius: 2,
-                    border: '1.5px solid rgba(255, 255, 255, 0.2)',
-                    background: 'linear-gradient(135deg, #f44336 0%, #e53935 100%)',
+                    borderRadius: 2.5,
+                    border: '1px solid rgba(255, 255, 255, 0.22)',
+                    background: 'linear-gradient(145deg, #ec407a 0%, #d81b60 100%)',
                     color: 'white',
                     fontWeight: 600,
-                    fontSize: '0.95rem',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    fontSize: '0.88rem',
+                    boxShadow: '0 12px 24px rgba(216, 27, 96, 0.16)',
+                    textTransform: 'none',
+                    letterSpacing: '0.01em',
+                    transition: 'all 0.25s ease',
                     '&:hover': {
-                      border: '1.5px solid rgba(255, 255, 255, 0.4)',
-                      background: 'linear-gradient(135deg, #e53935 0%, #c62828 100%)',
-                      boxShadow: '0 8px 16px rgba(244, 67, 54, 0.4)',
-                      transform: 'translateY(-2px)',
+                      border: '1px solid rgba(255, 255, 255, 0.36)',
+                      background: 'linear-gradient(145deg, #d81b60 0%, #ad1457 100%)',
+                      boxShadow: '0 16px 32px rgba(216, 27, 96, 0.2)',
+                      transform: 'translateY(-1px)',
                     },
                     '&:active': {
                       transform: 'translateY(0)',
@@ -399,15 +406,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
                   <ListItemIcon
                     sx={{
                       minWidth: 0,
-                      mr: collapsed && !isMobile ? 0 : 1.5,
+                      mr: collapsed && !isMobile ? 0 : 1.2,
                       justifyContent: 'center',
                       color: 'white',
-                      fontSize: '1.2rem',
+                      fontSize: '1rem',
                     }}
                   >
-                    <LogoutIcon />
+                    <LogoutIcon sx={{ fontSize: '1rem' }} />
                   </ListItemIcon>
-                  {(!collapsed || isMobile) && <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontSize: '0.9rem' }} />}
+                  {(!collapsed || isMobile) && <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontSize: '0.85rem', letterSpacing: '0.01em' }} />}
                 </ListItemButton>
               </Tooltip>
             </ListItem>
@@ -527,27 +534,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
             <Divider sx={{ my: 1, bgcolor: 'rgba(255, 255, 255, 0.2)' }} />
 
             {/* CERRAR SESIÓN PARA ADMIN */}
-            <ListItem disablePadding sx={{ px: 1 }}>
+            <ListItem disablePadding sx={{ px: 1, mt: 1 }}>
               <Tooltip title={collapsed && !isMobile ? 'Cerrar Sesión' : ''} placement="right">
                 <ListItemButton
                   onClick={handleLogout}
                   sx={{
-                    minHeight: 36,
-                    py: 1,
-                    px: 2,
+                    minHeight: 30,
+                    py: 0.6,
+                    px: 1.4,
                     justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
-                    borderRadius: 2,
-                    border: '1.5px solid rgba(255, 255, 255, 0.2)',
-                    background: 'linear-gradient(135deg, #f44336 0%, #e53935 100%)',
+                    borderRadius: 2.5,
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    background: 'linear-gradient(145deg, #f06292 0%, #d81b60 100%)',
                     color: 'white',
                     fontWeight: 600,
-                    fontSize: '0.95rem',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    fontSize: '0.86rem',
+                    boxShadow: '0 10px 20px rgba(216, 27, 96, 0.16)',
+                    textTransform: 'none',
+                    letterSpacing: '0.01em',
+                    transition: 'all 0.25s ease',
                     '&:hover': {
-                      border: '1.5px solid rgba(255, 255, 255, 0.4)',
-                      background: 'linear-gradient(135deg, #e53935 0%, #c62828 100%)',
-                      boxShadow: '0 8px 16px rgba(244, 67, 54, 0.4)',
-                      transform: 'translateY(-2px)',
+                      border: '1px solid rgba(255, 255, 255, 0.35)',
+                      background: 'linear-gradient(145deg, #d81b60 0%, #c2185b 100%)',
+                      boxShadow: '0 14px 28px rgba(216, 27, 96, 0.2)',
+                      transform: 'translateY(-1px)',
                     },
                     '&:active': {
                       transform: 'translateY(0)',
@@ -558,15 +568,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
                   <ListItemIcon
                     sx={{
                       minWidth: 0,
-                      mr: collapsed && !isMobile ? 0 : 1.5,
+                      mr: collapsed && !isMobile ? 0 : 1.2,
                       justifyContent: 'center',
                       color: 'white',
-                      fontSize: '1.2rem',
+                      fontSize: '1rem',
                     }}
                   >
-                    <LogoutIcon />
+                    <LogoutIcon sx={{ fontSize: '1rem' }} />
                   </ListItemIcon>
-                  {(!collapsed || isMobile) && <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontSize: '0.9rem' }} />}
+                  {(!collapsed || isMobile) && <ListItemText primary="Cerrar Sesión" primaryTypographyProps={{ fontSize: '0.85rem', letterSpacing: '0.01em' }} />}
                 </ListItemButton>
               </Tooltip>
             </ListItem>

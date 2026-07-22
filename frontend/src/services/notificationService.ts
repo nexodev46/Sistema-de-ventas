@@ -125,42 +125,49 @@ export const listenNotificationEvents = (
     }
   )
 
-  const unsubscribeProductos = onSnapshot(collection(db, 'productos'), (snapshot) => {
-    if (initialProductos) {
-      initialProductos = false
-      return
-    }
-
-    snapshot.docChanges().forEach((change) => {
-      if (change.type === 'added' || change.type === 'modified') {
-        const producto = change.doc.data() as any
-        const stockActual = Number(producto.stockActual ?? 0)
-        const stockMinimo = Number(producto.stockMinimo ?? 0)
-
-        if (stockActual === 0) {
-          onNewNotification({
-            id: generateId('PRODUCTO_AGOTADO', change.doc.id),
-            tipo: 'PRODUCTO_AGOTADO',
-            titulo: 'Producto agotado',
-            mensaje: `${producto.nombre ?? 'Producto'} se ha agotado`,
-            fecha: new Date().toISOString(),
-            leida: false,
-            link: '/productos',
-          })
-        } else if (stockActual <= stockMinimo) {
-          onNewNotification({
-            id: generateId('STOCK_BAJO', change.doc.id),
-            tipo: 'STOCK_BAJO',
-            titulo: 'Stock bajo',
-            mensaje: `${producto.nombre ?? 'Producto'} tiene solo ${stockActual} unidades`,
-            fecha: new Date().toISOString(),
-            leida: false,
-            link: '/productos',
-          })
-        }
+  const unsubscribeProductos = onSnapshot(
+    query(collection(db, 'productos'), where('activo', '==', true)),
+    (snapshot) => {
+      if (initialProductos) {
+        initialProductos = false
+        return
       }
-    })
-  })
+
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'removed') {
+          return
+        }
+
+        if (change.type === 'added' || change.type === 'modified') {
+          const producto = change.doc.data() as any
+          const stockActual = Number(producto.stockActual ?? 0)
+          const stockMinimo = Number(producto.stockMinimo ?? 0)
+
+          if (stockActual === 0) {
+            onNewNotification({
+              id: generateId('PRODUCTO_AGOTADO', change.doc.id),
+              tipo: 'PRODUCTO_AGOTADO',
+              titulo: 'Producto agotado',
+              mensaje: `${producto.nombre ?? 'Producto'} se ha agotado`,
+              fecha: new Date().toISOString(),
+              leida: false,
+              link: '/productos',
+            })
+          } else if (stockActual <= stockMinimo) {
+            onNewNotification({
+              id: generateId('STOCK_BAJO', change.doc.id),
+              tipo: 'STOCK_BAJO',
+              titulo: 'Stock bajo',
+              mensaje: `${producto.nombre ?? 'Producto'} tiene solo ${stockActual} unidades`,
+              fecha: new Date().toISOString(),
+              leida: false,
+              link: '/productos',
+            })
+          }
+        }
+      })
+    }
+  )
 
   const unsubscribeDevoluciones = onSnapshot(
     query(collection(db, 'devoluciones'), where('estado', '==', 'PENDIENTE')),

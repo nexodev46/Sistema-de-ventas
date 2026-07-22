@@ -61,7 +61,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext'
 import { auth, db } from '../../services/firebase'
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
-import { doc, updateDoc, getDoc } from 'firebase/firestore'
+import { doc, updateDoc, getDoc, collection, onSnapshot, addDoc, setDoc, query, orderBy, deleteDoc, serverTimestamp } from 'firebase/firestore'
 import { useSnackbar } from 'notistack'
 import { motion } from 'framer-motion'
 
@@ -157,44 +157,152 @@ export const Seguridad = () => {
   const [passwordSuccess, setPasswordSuccess] = useState('')
   const [twoFAEnabled, setTwoFAEnabled] = useState(false)
   const [notificacionesSeguridad, setNotificacionesSeguridad] = useState(true)
-  const [sessions, setSessions] = useState([
-    {
-      id: 1,
-      nombre: 'Chrome - Windows 11',
-      tipo: 'desktop',
-      ubicacion: 'Cusco, Perú',
-      ultimoAcceso: 'Hace 5 minutos',
-      color: '#3b82f6',
-      actual: true,
-    },
-    {
-      id: 2,
-      nombre: 'Firefox - MacBook',
-      tipo: 'desktop',
-      ubicacion: 'Lima, Perú',
-      ultimoAcceso: 'Hace 2 días',
-      color: '#f59e0b',
-      actual: false,
-    },
-    {
-      id: 3,
-      nombre: 'Safari - iPhone 13',
-      tipo: 'movil',
-      ubicacion: 'Arequipa, Perú',
-      ultimoAcceso: 'Hace 1 semana',
-      color: '#10b981',
-      actual: false,
-    },
-  ])
+  const [sessions, setSessions] = useState<any[]>([])
+  const [historialAccesos, setHistorialAccesos] = useState<any[]>([])
+  const [ubicacionEnVivo, setUbicacionEnVivo] = useState('Detectando ubicación...')
+  const [estadoUbicacion, setEstadoUbicacion] = useState<'detectando' | 'activo' | 'desactivado'>('detectando')
+
+  const getSesionesCollectionRef = (uid: string) => collection(db, 'usuarios', uid, 'sesiones')
+  const getSesionDocRef = (uid: string, id: string) => {
+    if (!uid || !id) return null
+    return doc(getSesionesCollectionRef(uid), id)
+  }
 
   useEffect(() => {
     cargarDatosSeguridad()
-  }, [])
+  }, [user?.id])
+
+  useEffect(() => {
+    const uid = user?.id || auth.currentUser?.uid
+    if (!uid) return
+
+    const userRef = doc(db, 'usuarios', uid)
+    const sesionesRef = collection(db, 'usuarios', uid, 'sesiones')
+    const historialRef = collection(db, 'usuarios', uid, 'historial')
+    const sesionesQuery = query(sesionesRef, orderBy('ultimoAcceso', 'desc'))
+    const historialQuery = query(historialRef, orderBy('timestamp', 'desc'))
+
+    const unsubscribeSesiones = onSnapshot(sesionesQuery, (snapshot) => {
+      const data = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+        ultimoAcceso: formatearFecha(docSnap.data().ultimoAcceso),
+        color: docSnap.data().color || '#3b82f6',
+      }))
+      setSessions(data)
+    })
+
+    const unsubscribeHistorial = onSnapshot(historialQuery, (snapshot) => {
+      const data = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+        fecha: formatearFecha(docSnap.data().timestamp),
+      }))
+      setHistorialAccesos(data)
+    })
+
+    return () => {
+      unsubscribeSesiones()
+      unsubscribeHistorial()
+    }
+  }, [user?.id])
+
+  useEffect(() => {
+    const uid = user?.id || auth.currentUser?.uid
+    if (!uid) return
+
+    let watchId: number | undefined
+    let mounted = true
+    let sessionId = ''
+
+    const registrarActividad = async () => {
+      const browser = navigator.userAgent || 'Desconocido'
+      const now = new Date()
+      const sessionKey = `seguridad-${uid}`
+      if (sessionStorage.getItem(sessionKey)) return
+      if (!uid) return
+
+      const locationData = await obtenerUbicacionActual()
+      sessionId = `session-${Date.now()}`
+      const sessionData = {
+        nombre: detectarNombreDispositivo(browser),
+        tipo: detectarTipoDispositivo(browser),
+        ubicacion: locationData.ubicacion,
+        ultimoAcceso: now,
+        color: locationData.color,
+        actual: true,
+        navegador: browser,
+        coordenadas: locationData.coordenadas,
+      }
+
+      const sesionDocRef = getSesionDocRef(uid, sessionId)
+      if (!sesionDocRef) return
+
+      await setDoc(sesionDocRef, sessionData, { merge: true })
+      await addDoc(collection(db, 'usuarios', uid, 'historial'), {
+        ...sessionData,
+        timestamp: serverTimestamp(),
+      })
+      sessionStorage.setItem(sessionKey, 'true')
+      if (mounted) {
+        setUbicacionEnVivo(locationData.ubicacion)
+        setEstadoUbicacion('activo')
+      }
+    }
+
+    registrarActividad().catch(() => {
+      if (mounted) {
+        setUbicacionEnVivo('Ubicación no disponible')
+        setEstadoUbicacion('desactivado')
+      }
+    })
+
+    if ('geolocation' in navigator) {
+      watchId = navigator.geolocation.watchPosition(
+        async (position) => {
+          const coords = {
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          }
+          const locationText = `Lat ${coords.lat.toFixed(4)}, Lon ${coords.lon.toFixed(4)}`
+          const sessionData = {
+            ubicacion: locationText,
+            coordenadas: coords,
+            ultimoAcceso: new Date(),
+          }
+          if (mounted) setUbicacionEnVivo(locationText)
+          if (mounted) setEstadoUbicacion('activo')
+          if (!uid || !sessionId) return
+          const sesionDocRef = getSesionDocRef(uid, sessionId)
+          if (!sesionDocRef) return
+          await setDoc(sesionDocRef, sessionData, { merge: true })
+        },
+        () => {
+          if (mounted) {
+            setUbicacionEnVivo('Ubicación no disponible')
+            setEstadoUbicacion('desactivado')
+          }
+        },
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
+      )
+    }
+
+    return () => {
+      mounted = false
+      if (watchId) navigator.geolocation.clearWatch(watchId)
+    }
+  }, [user?.id])
 
   const cargarDatosSeguridad = async () => {
     setLoading(true)
     try {
-      const userRef = doc(db, 'usuarios', auth.currentUser?.uid || '')
+      const uid = user?.id || auth.currentUser?.uid
+      if (!uid) {
+        setLoading(false)
+        return
+      }
+
+      const userRef = doc(db, 'usuarios', uid)
       const userDoc = await getDoc(userRef)
       if (userDoc.exists()) {
         const data = userDoc.data()
@@ -248,16 +356,28 @@ export const Seguridad = () => {
     }
   }
 
-  const handleRevocarSesion = (id: number) => {
-    setSessions(sessions.filter(s => s.id !== id))
-    enqueueSnackbar('Sesión cerrada correctamente', { variant: 'info' })
+  const handleRevocarSesion = async (id: string) => {
+    const uid = user?.id || auth.currentUser?.uid
+    if (!uid || !id) return
+
+    try {
+      const sesionDocRef = getSesionDocRef(uid, id)
+      if (!sesionDocRef) return
+      await deleteDoc(sesionDocRef)
+      enqueueSnackbar('Sesión cerrada correctamente', { variant: 'info' })
+    } catch (error) {
+      console.error('Error revocando sesión:', error)
+      enqueueSnackbar('No se pudo cerrar la sesión', { variant: 'error' })
+    }
   }
 
   const handleToggle2FA = async () => {
     const newState = !twoFAEnabled
     setTwoFAEnabled(newState)
     try {
-      const userRef = doc(db, 'usuarios', auth.currentUser?.uid || '')
+      const uid = user?.id || auth.currentUser?.uid
+      if (!uid) return
+      const userRef = doc(db, 'usuarios', uid)
       await updateDoc(userRef, { twoFAEnabled: newState })
       enqueueSnackbar(
         newState ? 'Autenticación en dos pasos activada' : 'Autenticación en dos pasos desactivada',
@@ -273,12 +393,62 @@ export const Seguridad = () => {
     const newState = !notificacionesSeguridad
     setNotificacionesSeguridad(newState)
     try {
-      const userRef = doc(db, 'usuarios', auth.currentUser?.uid || '')
+      const uid = user?.id || auth.currentUser?.uid
+      if (!uid) return
+      const userRef = doc(db, 'usuarios', uid)
       await updateDoc(userRef, { notificacionesSeguridad: newState })
     } catch (error) {
       console.error('Error actualizando notificaciones:', error)
       setNotificacionesSeguridad(!newState)
     }
+  }
+
+  const formatearFecha = (value: any) => {
+    if (!value) return 'Recientemente'
+    if (typeof value?.toDate === 'function') {
+      return value.toDate().toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })
+    }
+    if (value instanceof Date) {
+      return value.toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' })
+    }
+    return value
+  }
+
+  const obtenerUbicacionActual = async () => {
+    const defaultInfo = {
+      ubicacion: 'Ubicación no disponible',
+      coordenadas: null as any,
+      color: '#3b82f6',
+    }
+
+    if (!('geolocation' in navigator)) return defaultInfo
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 })
+      })
+
+      return {
+        ubicacion: `Lat ${position.coords.latitude.toFixed(4)}, Lon ${position.coords.longitude.toFixed(4)}`,
+        coordenadas: { lat: position.coords.latitude, lon: position.coords.longitude },
+        color: '#10b981',
+      }
+    } catch {
+      return defaultInfo
+    }
+  }
+
+  const detectarNombreDispositivo = (browser: string) => {
+    if (browser.includes('Mobile')) return 'Dispositivo móvil'
+    if (browser.includes('Mac')) return 'MacBook'
+    if (browser.includes('Windows')) return 'Windows PC'
+    return 'Dispositivo conectado'
+  }
+
+  const detectarTipoDispositivo = (browser: string) => {
+    if (browser.includes('Mobile')) return 'movil'
+    if (browser.includes('Mac') || browser.includes('Windows')) return 'desktop'
+    return 'desktop'
   }
 
   if (loading) {
@@ -309,7 +479,7 @@ export const Seguridad = () => {
         </Typography>
       </Box>
 
-      
+
 
       {/* Tarjetas de estadísticas */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -433,9 +603,15 @@ export const Seguridad = () => {
             <Box>
               <Typography variant="h6" fontWeight="bold">Sesiones Activas</Typography>
               <Typography variant="caption" color="text.secondary">
-                Dispositivos donde has iniciado sesión
+                Dispositivos conectados y ubicación en tiempo real
               </Typography>
             </Box>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <Chip color={estadoUbicacion === 'activo' ? 'success' : 'warning'} size="small" label={estadoUbicacion === 'activo' ? 'Ubicación en vivo' : 'Ubicación pendiente'} />
+            <Typography variant="body2" color="text.secondary">
+              {ubicacionEnVivo}
+            </Typography>
           </Box>
           <Divider sx={{ mb: 3 }} />
 
@@ -481,35 +657,28 @@ export const Seguridad = () => {
                   <TableCell>Fecha y Hora</TableCell>
                   <TableCell>Dispositivo</TableCell>
                   <TableCell>Ubicación</TableCell>
-                  <TableCell>IP</TableCell>
+                  <TableCell>Estado</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow>
-                  <TableCell>Hoy, 10:30 AM</TableCell>
-                  <TableCell>Chrome - Windows 11</TableCell>
-                  <TableCell>Cusco, Perú</TableCell>
-                  <TableCell>190.237.xx.xx</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Ayer, 3:15 PM</TableCell>
-                  <TableCell>Chrome - Windows 11</TableCell>
-                  <TableCell>Cusco, Perú</TableCell>
-                  <TableCell>190.237.xx.xx</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>02/06/2026, 9:45 AM</TableCell>
-                  <TableCell>Firefox - MacBook</TableCell>
-                  <TableCell>Lima, Perú</TableCell>
-                  <TableCell>181.64.xx.xx</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell sx={{ textAlign: 'center', py: 4 }} colSpan={4}>
-                    <Typography variant="body2" color="text.secondary">
-                      Mostrando los últimos accesos
-                    </Typography>
-                  </TableCell>
-                </TableRow>
+                {historialAccesos.length > 0 ? historialAccesos.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.fecha}</TableCell>
+                    <TableCell>{item.nombre || 'Dispositivo'}</TableCell>
+                    <TableCell>{item.ubicacion || 'No disponible'}</TableCell>
+                    <TableCell>
+                      <Chip size="small" color={item.actual ? 'success' : 'default'} label={item.actual ? 'Activo' : 'Histórico'} />
+                    </TableCell>
+                  </TableRow>
+                )) : (
+                  <TableRow>
+                    <TableCell sx={{ textAlign: 'center', py: 4 }} colSpan={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Aún no hay historial de accesos registrado
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>

@@ -324,7 +324,7 @@ export const ListadoVentas = () => {
   }
 
   const handleView = (id: string) => navigate(`/ventas/${id}`)
-  
+
   const handlePrint = (_venta: Venta) => {
     if (!configuracionFactura) {
       enqueueSnackbar('Configuración de facturación no disponible', { variant: 'warning' })
@@ -332,13 +332,13 @@ export const ListadoVentas = () => {
     }
     try {
       // Obtener símbolo de moneda según configuración
-      const simboloMoneda = 
+      const simboloMoneda =
         configuracionFactura.factura.moneda === 'USD' ? '$ ' :
-        configuracionFactura.factura.moneda === 'EUR' ? '€ ' :
-        'S/ '
+          configuracionFactura.factura.moneda === 'EUR' ? '€ ' :
+            'S/ '
 
       const numeroFactura = `${configuracionFactura.factura.serie}-${String(configuracionFactura.factura.siguienteNumero).padStart(8, '0')}`
-      
+
       // Preparar configuración con símbolo
       const configConSimbolo = {
         ...configuracionFactura,
@@ -362,13 +362,13 @@ export const ListadoVentas = () => {
     setDownloadingPdf(true)
     try {
       // Obtener símbolo de moneda según configuración
-      const simboloMoneda = 
+      const simboloMoneda =
         configuracionFactura.factura.moneda === 'USD' ? '$ ' :
-        configuracionFactura.factura.moneda === 'EUR' ? '€ ' :
-        'S/ '
+          configuracionFactura.factura.moneda === 'EUR' ? '€ ' :
+            'S/ '
 
       const numeroFactura = `${configuracionFactura.factura.serie}-${String(configuracionFactura.factura.siguienteNumero).padStart(8, '0')}`
-      
+
       // Preparar configuración con símbolo
       const configConSimbolo = {
         ...configuracionFactura,
@@ -413,11 +413,11 @@ export const ListadoVentas = () => {
       for (let i = 0; i < filtered.length; i++) {
         const venta = filtered[i]
         const numeroFactura = `${configuracionFactura?.factura.serie}-${String((configuracionFactura?.factura.siguienteNumero || 0) + i).padStart(8, '0')}`
-        const simboloMoneda = 
+        const simboloMoneda =
           configuracionFactura?.factura.moneda === 'USD' ? '$ ' :
-          configuracionFactura?.factura.moneda === 'EUR' ? '€ ' :
-          'S/ '
-        
+            configuracionFactura?.factura.moneda === 'EUR' ? '€ ' :
+              'S/ '
+
         const configConSimbolo = {
           ...configuracionFactura,
           factura: {
@@ -425,7 +425,7 @@ export const ListadoVentas = () => {
             simbolo: simboloMoneda,
           },
         }
-        
+
         await facturaPdfService.descargarFactura(venta, configConSimbolo as ConfiguracionFactura, numeroFactura)
         // Pequeño delay entre descargas para evitar conflictos
         await new Promise(resolve => setTimeout(resolve, 300))
@@ -630,16 +630,16 @@ export const ListadoVentas = () => {
           <Button variant="outlined" startIcon={<FilterList />} onClick={() => setOpenFilterDialog(true)}>
             Filtrar
           </Button>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             startIcon={<PictureAsPdf />}
             onClick={handleExportarPdfGlobal}
             disabled={filtered.length === 0}
           >
             PDF
           </Button>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             startIcon={<Download />}
             onClick={handleExportarExcelGlobal}
             disabled={filtered.length === 0}
@@ -934,7 +934,7 @@ export const ListadoVentas = () => {
         </DialogContent>
         <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button 
+            <Button
               startIcon={<PictureAsPdf />}
               onClick={() => selectedVenta && handleDescargarPdf(selectedVenta)}
               disabled={downloadingPdf}
@@ -944,7 +944,7 @@ export const ListadoVentas = () => {
             >
               {downloadingPdf ? 'Descargando...' : 'Descargar PDF'}
             </Button>
-            <Button 
+            <Button
               startIcon={<Print />}
               onClick={() => selectedVenta && handlePrint(selectedVenta)}
               variant="contained"
