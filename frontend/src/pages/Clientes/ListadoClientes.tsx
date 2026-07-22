@@ -54,6 +54,8 @@ import { clienteService } from '../../services/clienteService'
 import { Cliente } from '../../types/cliente.types'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
 
 // Componente de tarjeta de estadística
 const StatCard = ({ title, value, icon, color, delay = 0 }: any) => {
@@ -282,6 +284,95 @@ export const ListadoClientes = () => {
   const handleEdit = (id: string) => navigate(`/clientes/editar/${id}`)
   const handleView = (id: string) => navigate(`/clientes/${id}`)
 
+  const handleExportExcel = () => {
+    try {
+      const datosExcel = filtered.map((cliente) => ({
+        Nombre: cliente.nombre,
+        Email: cliente.email,
+        Teléfono: cliente.telefono,
+        Dirección: cliente.direccion,
+        Documento: cliente.documento,
+        'Tipo de documento': cliente.tipoDocumento,
+        'Fecha de nacimiento': cliente.fechaNacimiento,
+        'Fecha de registro': cliente.fechaRegistro,
+        'Total compras': cliente.totalCompras || 0,
+        'Última compra': cliente.ultimaCompra || '',
+        Activo: cliente.activo ? 'Sí' : 'No',
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(datosExcel)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Clientes')
+      const nombreArchivo = `Clientes_${new Date().toISOString().slice(0, 10)}.xlsx`
+      XLSX.writeFile(workbook, nombreArchivo)
+    } catch (error) {
+      console.error('Error exportando clientes a Excel:', error)
+      alert('No se pudo exportar la lista de clientes a Excel. Revisa la consola para más detalles.')
+    }
+  }
+
+  const handleExportPDF = () => {
+    try {
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
+      const headers = ['Nombre', 'Email', 'Teléfono', 'Documento', 'Tipo documento', 'Activo']
+      const rows = filtered.map((cliente) => [
+        cliente.nombre,
+        cliente.email,
+        cliente.telefono,
+        cliente.documento,
+        cliente.tipoDocumento,
+        cliente.activo ? 'Sí' : 'No',
+      ])
+
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const margin = 40
+      const startY = 60
+      const rowHeight = 20
+      let y = startY
+
+      doc.setFontSize(14)
+      doc.text('Listado de clientes', pageWidth / 2, 30, { align: 'center' })
+      doc.setFontSize(10)
+
+      const columnWidths = [120, 140, 100, 90, 90, 60]
+      const xPositions = columnWidths.reduce<number[]>((acc, width, index) => {
+        if (index === 0) return [margin]
+        return [...acc, acc[index - 1] + columnWidths[index - 1]]
+      }, [])
+
+      const drawRow = (row: string[], isHeader = false) => {
+        let x = margin
+        row.forEach((cell, index) => {
+          if (isHeader) {
+            doc.setFont(undefined, 'bold')
+          } else {
+            doc.setFont(undefined, 'normal')
+          }
+          doc.text(String(cell || ''), x, y)
+          x += columnWidths[index]
+        })
+        y += rowHeight
+      }
+
+      drawRow(headers, true)
+      doc.line(margin, y - 12, pageWidth - margin, y - 12)
+
+      rows.forEach((row) => {
+        if (y > doc.internal.pageSize.getHeight() - 40) {
+          doc.addPage()
+          y = startY
+        }
+        drawRow(row)
+      })
+
+      const nombreArchivo = `Clientes_${new Date().toISOString().slice(0, 10)}.pdf`
+      doc.save(nombreArchivo)
+    } catch (error) {
+      console.error('Error exportando clientes a PDF:', error)
+      alert('No se pudo exportar la lista de clientes a PDF. Revisa la consola para más detalles.')
+    }
+  }
+
   const totalClientes = clientes.length
   const clientesActivos = clientes.filter(c => c.activo).length
   const totalCompras = clientes.reduce((sum, c) => sum + (c.totalCompras || 0), 0)
@@ -373,6 +464,7 @@ export const ListadoClientes = () => {
               variant="outlined"
               startIcon={<FileCopy />}
               sx={{ borderRadius: 2 }}
+              onClick={handleExportExcel}
             >
               Exportar Excel
             </Button>
@@ -383,6 +475,7 @@ export const ListadoClientes = () => {
               variant="outlined"
               startIcon={<PictureAsPdf />}
               sx={{ borderRadius: 2 }}
+              onClick={handleExportPDF}
             >
               Exportar PDF
             </Button>

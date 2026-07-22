@@ -9,6 +9,7 @@ import { FormularioProducto } from '../pages/Inventario/Productos/FormularioProd
 import { DetalleProducto } from '../pages/Inventario/Productos/DetalleProducto'
 import { ListadoClientes } from '../pages/Clientes/ListadoClientes'
 import { FormularioCliente } from '../pages/Clientes/FormularioCliente'
+import { DetalleCliente } from '../pages/Clientes/DetalleCliente'
 import { Configuracion } from '../pages/Configuracion/Configuracion'
 import { Usuarios } from '../pages/Configuracion/Usuarios'
 import { Empresa } from '../pages/Configuracion/Empresa'
@@ -60,6 +61,7 @@ export const AppRoutes = () => {
         <Route path="/clientes" element={<ListadoClientes />} />
         <Route path="/clientes/nuevo" element={<FormularioCliente />} />
         <Route path="/clientes/editar/:id" element={<FormularioCliente />} />
+        <Route path="/clientes/:id" element={<DetalleCliente />} />
         <Route path="/ventas" element={<ListadoVentas />} />
         <Route path="/ventas/:id" element={<DetalleVenta />} />
         <Route path="/devoluciones" element={<ListadoDevoluciones />} />
