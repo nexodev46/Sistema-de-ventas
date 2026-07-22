@@ -317,9 +317,9 @@ export const ListadoClientes = () => {
       const headers = ['Nombre', 'Email', 'Teléfono', 'Documento', 'Tipo documento', 'Activo']
       const rows = filtered.map((cliente) => [
         cliente.nombre,
-        cliente.email,
-        cliente.telefono,
-        cliente.documento,
+        cliente.email || '',
+        cliente.telefono || '',
+        cliente.documento || '',
         cliente.tipoDocumento,
         cliente.activo ? 'Sí' : 'No',
       ])
@@ -344,9 +344,9 @@ export const ListadoClientes = () => {
         let x = margin
         row.forEach((cell, index) => {
           if (isHeader) {
-            doc.setFont(undefined, 'bold')
+            doc.setFont('helvetica', 'bold')
           } else {
-            doc.setFont(undefined, 'normal')
+            doc.setFont('helvetica', 'normal')
           }
           doc.text(String(cell || ''), x, y)
           x += columnWidths[index]

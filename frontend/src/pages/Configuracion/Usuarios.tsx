@@ -178,6 +178,7 @@ const UserCard = ({ user, onEdit, onDelete, onToggleStatus, currentUser }: any) 
           <CardContent sx={{ pt: 4 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
               <Avatar
+                src={user.fotoURL || undefined}
                 sx={{
                   width: 80,
                   height: 80,
@@ -189,7 +190,7 @@ const UserCard = ({ user, onEdit, onDelete, onToggleStatus, currentUser }: any) 
                   boxShadow: 3,
                 }}
               >
-                {(user.nombre || 'Usuario').charAt(0).toUpperCase()}
+                {!user.fotoURL && (user.nombre || 'Usuario').charAt(0).toUpperCase()}
               </Avatar>
               <Typography variant="h6" fontWeight="bold" textAlign="center">
                 {user.nombre || 'Usuario'}
