@@ -16,8 +16,16 @@ export interface Venta {
     id: string
     nombre: string
     documento: string
+    email?: string
+    telefono?: string
+    direccion?: string
   }
   productos: ProductoVenta[]
+  items?: Array<{
+    nombre: string
+    cantidad: number
+    precio: number
+  }>
   subtotal: number
   igv: number
   total: number

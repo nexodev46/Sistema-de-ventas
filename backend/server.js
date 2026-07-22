@@ -215,6 +215,52 @@ app.post('/api/uploads/perfiles/:userId', uploadLimiter, upload.array('files', 1
 // Health
 app.get('/api/health', (req, res) => res.json({ ok: true }))
 
+// ===== STRIPE PAYMENT ENDPOINTS =====
+const { createPaymentIntent, createSubscription, cancelSubscription } = require('./stripe-service')
+
+app.post('/api/payment/create-subscription', async (req, res) => {
+  const { email, priceId } = req.body
+  try {
+    if (!email || !priceId) {
+      return res.status(400).json({ error: 'Email y priceId requeridos' })
+    }
+    const result = await createSubscription(email, priceId)
+    res.json(result)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/payment/cancel-subscription', async (req, res) => {
+  const { subscriptionId } = req.body
+  try {
+    if (!subscriptionId) {
+      return res.status(400).json({ error: 'subscriptionId requerido' })
+    }
+    const result = await cancelSubscription(subscriptionId)
+    res.json(result)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// ===== SUPPORT EMAIL ENDPOINTS =====
+const { sendSupportEmail } = require('./email-service')
+
+app.post('/api/support/contact', async (req, res) => {
+  const { name, email, message, subject } = req.body
+  try {
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'Campos requeridos: name, email, message' })
+    }
+    await sendSupportEmail(name, email, message, subject)
+    res.json({ ok: true, message: 'Email enviado correctamente' })
+  } catch (error) {
+    console.error('Support email error:', error)
+    res.status(500).json({ error: 'Error enviando email' })
+  }
+})
+
 // Error handler to log unexpected errors and return JSON
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err && err.stack ? err.stack : err)

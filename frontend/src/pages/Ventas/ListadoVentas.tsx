@@ -63,6 +63,11 @@ import { ventaService } from '../../services/ventaService'
 import { Venta } from '../../types/venta.types'
 import { useNavigate } from 'react-router-dom'
 import { SkeletonTable } from '../../components/Common/SkeletonTable'
+import { facturaPdfService, ConfiguracionFactura } from '../../services/facturaPdfService'
+import { descargarVentasConResumen } from '../../services/ventaExcelService'
+import { useSnackbar } from 'notistack'
+import { doc, onSnapshot } from 'firebase/firestore'
+import { db } from '../../services/firebase'
 import {
   AreaChart,
   Area,
@@ -144,6 +149,7 @@ const metodoPagoColores: Record<string, string> = {
 export const ListadoVentas = () => {
   const theme = useTheme()
   const navigate = useNavigate()
+  const { enqueueSnackbar } = useSnackbar()
   const [ventas, setVentas] = useState<Venta[]>([])
   const [filtered, setFiltered] = useState<Venta[]>([])
   const [loading, setLoading] = useState(true)
@@ -159,6 +165,8 @@ export const ListadoVentas = () => {
   const [detalleOpen, setDetalleOpen] = useState(false)
   const [selectedVenta, setSelectedVenta] = useState<Venta | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [downloadingPdf, setDownloadingPdf] = useState(false)
+  const [configuracionFactura, setConfiguracionFactura] = useState<ConfiguracionFactura | null>(null)
   const [stats, setStats] = useState({
     totalHoy: 0,
     totalSemana: 0,
@@ -174,7 +182,38 @@ export const ListadoVentas = () => {
   const [ventasPorMetodo, setVentasPorMetodo] = useState<any[]>([])
 
   useEffect(() => {
-    const unsubscribe = ventaService.subscribeAll((data) => {
+    // Cargar configuración de facturación
+    const empresaRef = doc(db, 'configuracion', 'empresa')
+    const unsubscribeConfig = onSnapshot(empresaRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data()
+        setConfiguracionFactura({
+          empresa: {
+            nombre: data.nombre || '',
+            ruc: data.ruc || '',
+            direccion: data.direccion || '',
+            telefono: data.telefono || '',
+            email: data.email || '',
+          },
+          factura: {
+            serie: data.facturacion?.serie || 'F001',
+            siguienteNumero: data.facturacion?.siguienteNumero || 1,
+            iva: data.facturacion?.iva || 18,
+            ivaNombre: data.facturacion?.ivaNombre || 'IGV',
+            moneda: data.facturacion?.moneda || 'PEN',
+            simbolo: data.facturacion?.moneda === 'USD' ? '$ ' : data.facturacion?.moneda === 'EUR' ? '€ ' : 'S/ ',
+            plantilla: data.facturacion?.plantilla || 'classic',
+            incluirIgv: data.facturacion?.incluirIgv !== false,
+            mostrarQr: data.facturacion?.mostrarQr !== false,
+            piePagina: data.facturacion?.piePagina || '¡Gracias por su compra!',
+            terminos: data.facturacion?.terminos || '',
+          },
+        })
+      }
+    })
+
+    // Cargar ventas
+    const unsubscribeVentas = ventaService.subscribeAll((data) => {
       setVentas(data)
       setFiltered(data)
       calcularEstadisticas(data)
@@ -183,7 +222,8 @@ export const ListadoVentas = () => {
     }, console.error)
 
     return () => {
-      unsubscribe()
+      unsubscribeConfig()
+      unsubscribeVentas()
     }
   }, [])
 
@@ -284,7 +324,121 @@ export const ListadoVentas = () => {
   }
 
   const handleView = (id: string) => navigate(`/ventas/${id}`)
-  const handlePrint = (_venta: Venta) => window.print()
+  
+  const handlePrint = (_venta: Venta) => {
+    if (!configuracionFactura) {
+      enqueueSnackbar('Configuración de facturación no disponible', { variant: 'warning' })
+      return
+    }
+    try {
+      // Obtener símbolo de moneda según configuración
+      const simboloMoneda = 
+        configuracionFactura.factura.moneda === 'USD' ? '$ ' :
+        configuracionFactura.factura.moneda === 'EUR' ? '€ ' :
+        'S/ '
+
+      const numeroFactura = `${configuracionFactura.factura.serie}-${String(configuracionFactura.factura.siguienteNumero).padStart(8, '0')}`
+      
+      // Preparar configuración con símbolo
+      const configConSimbolo = {
+        ...configuracionFactura,
+        factura: {
+          ...configuracionFactura.factura,
+          simbolo: simboloMoneda,
+        },
+      }
+
+      facturaPdfService.imprimirFactura(_venta, configConSimbolo, numeroFactura)
+    } catch (error) {
+      enqueueSnackbar('Error al imprimir factura', { variant: 'error' })
+    }
+  }
+
+  const handleDescargarPdf = async (venta: Venta) => {
+    if (!configuracionFactura) {
+      enqueueSnackbar('Configuración de facturación no disponible', { variant: 'warning' })
+      return
+    }
+    setDownloadingPdf(true)
+    try {
+      // Obtener símbolo de moneda según configuración
+      const simboloMoneda = 
+        configuracionFactura.factura.moneda === 'USD' ? '$ ' :
+        configuracionFactura.factura.moneda === 'EUR' ? '€ ' :
+        'S/ '
+
+      const numeroFactura = `${configuracionFactura.factura.serie}-${String(configuracionFactura.factura.siguienteNumero).padStart(8, '0')}`
+      
+      // Preparar configuración con símbolo
+      const configConSimbolo = {
+        ...configuracionFactura,
+        factura: {
+          ...configuracionFactura.factura,
+          simbolo: simboloMoneda,
+        },
+      }
+
+      await facturaPdfService.descargarFactura(venta, configConSimbolo, numeroFactura)
+      enqueueSnackbar('Factura descargada exitosamente', { variant: 'success' })
+    } catch (error) {
+      enqueueSnackbar('Error al descargar factura', { variant: 'error' })
+      console.error('Error descargando PDF:', error)
+    } finally {
+      setDownloadingPdf(false)
+    }
+  }
+
+  const handleExportarExcelGlobal = () => {
+    if (filtered.length === 0) {
+      enqueueSnackbar('No hay ventas para exportar', { variant: 'warning' })
+      return
+    }
+    try {
+      descargarVentasConResumen(filtered, 'Ventas')
+      enqueueSnackbar('Ventas exportadas a Excel exitosamente', { variant: 'success' })
+    } catch (error) {
+      enqueueSnackbar('Error al exportar a Excel', { variant: 'error' })
+      console.error('Error exportando Excel:', error)
+    }
+  }
+
+  const handleExportarPdfGlobal = async () => {
+    if (filtered.length === 0) {
+      enqueueSnackbar('No hay ventas para exportar', { variant: 'warning' })
+      return
+    }
+    setDownloadingPdf(true)
+    try {
+      // Exportar múltiples PDFs - uno por cada venta
+      for (let i = 0; i < filtered.length; i++) {
+        const venta = filtered[i]
+        const numeroFactura = `${configuracionFactura?.factura.serie}-${String((configuracionFactura?.factura.siguienteNumero || 0) + i).padStart(8, '0')}`
+        const simboloMoneda = 
+          configuracionFactura?.factura.moneda === 'USD' ? '$ ' :
+          configuracionFactura?.factura.moneda === 'EUR' ? '€ ' :
+          'S/ '
+        
+        const configConSimbolo = {
+          ...configuracionFactura,
+          factura: {
+            ...configuracionFactura?.factura,
+            simbolo: simboloMoneda,
+          },
+        }
+        
+        await facturaPdfService.descargarFactura(venta, configConSimbolo as ConfiguracionFactura, numeroFactura)
+        // Pequeño delay entre descargas para evitar conflictos
+        await new Promise(resolve => setTimeout(resolve, 300))
+      }
+      enqueueSnackbar(`${filtered.length} facturas descargadas`, { variant: 'success' })
+    } catch (error) {
+      enqueueSnackbar('Error al descargar PDFs', { variant: 'error' })
+      console.error('Error descargando PDFs:', error)
+    } finally {
+      setDownloadingPdf(false)
+    }
+  }
+
   const handleDelete = (venta: Venta) => {
     setVentaToDelete(venta)
     setDeleteDialogOpen(true)
@@ -476,8 +630,22 @@ export const ListadoVentas = () => {
           <Button variant="outlined" startIcon={<FilterList />} onClick={() => setOpenFilterDialog(true)}>
             Filtrar
           </Button>
-          <Button variant="outlined" startIcon={<PictureAsPdf />}>PDF</Button>
-          <Button variant="outlined" startIcon={<Download />}>Excel</Button>
+          <Button 
+            variant="outlined" 
+            startIcon={<PictureAsPdf />}
+            onClick={handleExportarPdfGlobal}
+            disabled={filtered.length === 0}
+          >
+            PDF
+          </Button>
+          <Button 
+            variant="outlined" 
+            startIcon={<Download />}
+            onClick={handleExportarExcelGlobal}
+            disabled={filtered.length === 0}
+          >
+            Excel
+          </Button>
           <Button variant="outlined" startIcon={showCharts ? <Close /> : <Timeline />} onClick={() => setShowCharts(!showCharts)}>
             {showCharts ? 'Ocultar gráficos' : 'Mostrar gráficos'}
           </Button>
@@ -587,6 +755,28 @@ export const ListadoVentas = () => {
                         <Tooltip title="Ver detalles">
                           <IconButton size="small" onClick={() => handleOpenDetalle(venta)} sx={{ color: theme.palette.info.main, bgcolor: alpha(theme.palette.info.main, 0.08) }}>
                             <Visibility fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Descargar PDF">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDescargarPdf(venta)}
+                            disabled={downloadingPdf}
+                            sx={{
+                              color: theme.palette.success.main,
+                              bgcolor: alpha(theme.palette.success.main, 0.08),
+                              transition: 'transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease',
+                              '&:hover': {
+                                bgcolor: alpha(theme.palette.success.main, 0.15),
+                                transform: 'scale(1.08)',
+                                boxShadow: theme.shadows[4],
+                              },
+                              '&:disabled': {
+                                opacity: 0.5,
+                              },
+                            }}
+                          >
+                            <PictureAsPdf fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Imprimir ticket">
@@ -743,8 +933,31 @@ export const ListadoVentas = () => {
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2, justifyContent: 'space-between' }}>
-          <Button onClick={handleCloseDetalle}>Cerrar</Button>
-          <Button variant="contained" color="primary" onClick={handleCloseDetalle}>Aceptar</Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button 
+              startIcon={<PictureAsPdf />}
+              onClick={() => selectedVenta && handleDescargarPdf(selectedVenta)}
+              disabled={downloadingPdf}
+              variant="contained"
+              color="success"
+              size="small"
+            >
+              {downloadingPdf ? 'Descargando...' : 'Descargar PDF'}
+            </Button>
+            <Button 
+              startIcon={<Print />}
+              onClick={() => selectedVenta && handlePrint(selectedVenta)}
+              variant="contained"
+              color="warning"
+              size="small"
+            >
+              Imprimir
+            </Button>
+          </Box>
+          <Box>
+            <Button onClick={handleCloseDetalle}>Cerrar</Button>
+            <Button variant="contained" color="primary" onClick={handleCloseDetalle}>Aceptar</Button>
+          </Box>
         </DialogActions>
       </Dialog>
 

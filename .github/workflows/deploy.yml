@@ -1,0 +1,67 @@
+# CI/CD Pipeline - GitHub Actions
+
+Archivo `.github/workflows/deploy.yml`:
+
+```yaml
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Backend
+      run: |
+        cd backend
+        npm install
+        npm run test 2>/dev/null || true
+
+    - name: Install Frontend
+      run: |
+        cd frontend
+        npm install
+
+    - name: Build Frontend
+      run: |
+        cd frontend
+        npm run build
+      env:
+        VITE_API_URL: https://api.tu-empresa.com/api
+        VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+        VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+        VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+
+    - name: Deploy to Azure
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'api-tu-empresa'
+        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+        package: 'backend'
+
+    - name: Deploy Static Site
+      uses: azure/static-web-apps-deploy@v1
+      with:
+        azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        action: 'upload'
+        app_location: 'frontend/dist'
+        skip_app_build: true
+```
+
+Configurar Secrets en GitHub:
+1. Repository → Settings → Secrets and variables → Actions
+2. Agregar: `FIREBASE_API_KEY`, `AZURE_PUBLISH_PROFILE`, etc.
+

@@ -59,7 +59,7 @@ import { db } from '../../services/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSnackbar } from 'notistack'
 import { motion } from 'framer-motion'
- 
+import { facturaPdfService } from '../../services/facturaPdfService'
 
 // Plantillas de factura
 const plantillasFactura = [
@@ -116,6 +116,129 @@ export const Facturacion = () => {
     const unsubscribe = cargarConfiguracion()
     return () => unsubscribe?.()
   }, [])
+
+  const handleExportarPdfPrueba = async () => {
+    try {
+      const ventaPrueba = {
+        id: '1',
+        numero: `${configuracion.factura.serie}-${String(configuracion.factura.siguienteNumero).padStart(8, '0')}`,
+        fecha: new Date().toLocaleDateString('es-PE'),
+        cliente: {
+          id: '1',
+          nombre: 'Cliente de Prueba',
+          documento: '12345678901',
+          email: 'cliente@example.com',
+          telefono: '+51999999999',
+        },
+        productos: [
+          {
+            id: '1',
+            codigo: 'PROD001',
+            nombre: 'Producto de ejemplo',
+            precio: 100,
+            cantidad: 1,
+            subtotal: 100,
+          },
+        ],
+        items: [
+          {
+            nombre: 'Producto de ejemplo',
+            cantidad: 1,
+            precio: 100,
+          },
+        ],
+        subtotal: 100,
+        igv: configuracion.factura.incluirIgv ? (100 * configuracion.factura.iva) / 100 : 0,
+        total: configuracion.factura.incluirIgv ? 100 + (100 * configuracion.factura.iva) / 100 : 100,
+        metodoPago: 'EFECTIVO',
+        estado: 'COMPLETADA',
+        vendedor: {
+          id: user?.id || '1',
+          nombre: user?.nombre || 'Vendedor',
+        },
+      } as any
+
+      const monedaInfo = getMonedaInfo(configuracion.factura.moneda)
+      const configConSimbolo = {
+        ...configuracion,
+        factura: {
+          ...configuracion.factura,
+          simbolo: monedaInfo.simbolo,
+        },
+      }
+
+      await facturaPdfService.descargarFactura(
+        ventaPrueba,
+        configConSimbolo as any,
+        `${configuracion.factura.serie}-${String(configuracion.factura.siguienteNumero).padStart(8, '0')}`
+      )
+      enqueueSnackbar('PDF de prueba descargado exitosamente', { variant: 'success' })
+    } catch (error) {
+      console.error('Error descargando PDF de prueba:', error)
+      enqueueSnackbar('Error al descargar PDF de prueba', { variant: 'error' })
+    }
+  }
+
+  const handleImprimirPrueba = async () => {
+    try {
+      const ventaPrueba = {
+        id: '1',
+        numero: `${configuracion.factura.serie}-${String(configuracion.factura.siguienteNumero).padStart(8, '0')}`,
+        fecha: new Date().toLocaleDateString('es-PE'),
+        cliente: {
+          id: '1',
+          nombre: 'Cliente de Prueba',
+          documento: '12345678901',
+          email: 'cliente@example.com',
+          telefono: '+51999999999',
+        },
+        productos: [
+          {
+            id: '1',
+            codigo: 'PROD001',
+            nombre: 'Producto de ejemplo',
+            precio: 100,
+            cantidad: 1,
+            subtotal: 100,
+          },
+        ],
+        items: [
+          {
+            nombre: 'Producto de ejemplo',
+            cantidad: 1,
+            precio: 100,
+          },
+        ],
+        subtotal: 100,
+        igv: configuracion.factura.incluirIgv ? (100 * configuracion.factura.iva) / 100 : 0,
+        total: configuracion.factura.incluirIgv ? 100 + (100 * configuracion.factura.iva) / 100 : 100,
+        metodoPago: 'EFECTIVO',
+        estado: 'COMPLETADA',
+        vendedor: {
+          id: user?.id || '1',
+          nombre: user?.nombre || 'Vendedor',
+        },
+      } as any
+
+      const monedaInfo = getMonedaInfo(configuracion.factura.moneda)
+      const configConSimbolo = {
+        ...configuracion,
+        factura: {
+          ...configuracion.factura,
+          simbolo: monedaInfo.simbolo,
+        },
+      }
+
+      await facturaPdfService.imprimirFactura(
+        ventaPrueba,
+        configConSimbolo as any,
+        `${configuracion.factura.serie}-${String(configuracion.factura.siguienteNumero).padStart(8, '0')}`
+      )
+    } catch (error) {
+      console.error('Error imprimiendo factura de prueba:', error)
+      enqueueSnackbar('Error al imprimir factura de prueba', { variant: 'error' })
+    }
+  }
 
   const cargarConfiguracion = () => {
     setLoading(true)
@@ -482,10 +605,10 @@ export const Facturacion = () => {
             </Card>
 
             <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-              <Button fullWidth variant="outlined" startIcon={<Print />} size="small">
+              <Button fullWidth variant="outlined" startIcon={<Print />} size="small" onClick={handleImprimirPrueba}>
                 Imprimir Prueba
               </Button>
-              <Button fullWidth variant="outlined" startIcon={<PictureAsPdf />} size="small">
+              <Button fullWidth variant="outlined" startIcon={<PictureAsPdf />} size="small" onClick={handleExportarPdfPrueba}>
                 PDF de Prueba
               </Button>
             </Box>
@@ -614,8 +737,8 @@ export const Facturacion = () => {
           </Paper>
         </DialogContent>
         <DialogActions>
-          <Button startIcon={<Print />} onClick={() => window.print()}>Imprimir</Button>
-          <Button startIcon={<PictureAsPdf />} variant="contained">Exportar PDF</Button>
+          <Button startIcon={<Print />} onClick={handleImprimirPrueba}>Imprimir</Button>
+          <Button startIcon={<PictureAsPdf />} variant="contained" onClick={handleExportarPdfPrueba}>Exportar PDF</Button>
         </DialogActions>
       </Dialog>
     </Box>
