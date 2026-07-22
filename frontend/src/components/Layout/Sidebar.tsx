@@ -66,6 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
   const [companyLogo, setCompanyLogo] = useState<string | null>(null)
   const [companyName, setCompanyName] = useState<string | null>(null)
   const hasCompanyLogo = Boolean(companyLogo?.trim())
+  const companyLogoSrc = companyLogo?.trim() || undefined
 
   useEffect(() => {
     const localLogo = window.localStorage.getItem(LOGO_STORAGE_KEY)
@@ -273,7 +274,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onMobileClose }) =
             {hasCompanyLogo ? (
               <Box
                 component="img"
-                src={companyLogo}
+                src={companyLogoSrc}
                 alt="Logo de la empresa"
                 sx={{
                   width: '100%',
