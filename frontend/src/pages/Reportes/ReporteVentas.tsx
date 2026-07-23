@@ -38,6 +38,8 @@ import {
   DateRange,
   Receipt,
 } from '@mui/icons-material'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
 import { ventaService } from '../../services/ventaService'
 import { Venta } from '../../types/venta.types'
 import { SkeletonTable, SkeletonDashboardGrid } from '../../components/Common/SkeletonTable'
@@ -124,6 +126,7 @@ export const ReporteVentas = () => {
   const [fechaFin, setFechaFin] = useState(() => new Date().toISOString().split('T')[0])
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [openExportDialog, setOpenExportDialog] = useState(false)
+  const [ventasExport, setVentasExport] = useState<Venta[]>([])
 
   // Datos para gráficos
   const [ventasPorDia, setVentasPorDia] = useState<any[]>([])
@@ -143,6 +146,7 @@ export const ReporteVentas = () => {
   useEffect(() => {
     const unsubscribe = ventaService.subscribeAll((data) => {
       const ventasFiltradas = data.filter(v => v.fecha >= fechaInicio && v.fecha <= fechaFin)
+      setVentasExport(ventasFiltradas)
       procesarDatos(ventasFiltradas)
       setLoading(false)
     }, console.error)
@@ -221,15 +225,136 @@ export const ReporteVentas = () => {
     setVentasPorHora(horas)
   }
 
+  const formatCurrency = (value: number) => `S/ ${value.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
   const handleExportPDF = () => {
-    setOpenExportDialog(false)
-    window.print()
+    try {
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
+      const margin = 40
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const startY = 60
+      const rowHeight = 18
+      let y = startY
+
+      doc.setFontSize(16)
+      doc.text('Reporte de ventas', pageWidth / 2, 30, { align: 'center' })
+      doc.setFontSize(10)
+      doc.text(`Periodo: ${fechaInicio} al ${fechaFin}`, margin, 48)
+
+      const rows: string[][] = ventasExport.map((venta) => [
+        String(venta.numero || ''),
+        String(venta.fecha || ''),
+        String(venta.hora || ''),
+        String(venta.cliente?.nombre || ''),
+        String(venta.metodoPago || ''),
+        String(formatCurrency(venta.total || 0)),
+      ])
+
+      const headers: string[] = ['N° Venta', 'Fecha', 'Hora', 'Cliente', 'Pago', 'Total']
+      const columnWidths = [85, 70, 50, 120, 75, 80]
+
+      const drawRow = (row: string[], isHeader = false) => {
+        let x = margin
+        row.forEach((cell, index) => {
+          if (isHeader) {
+            doc.setFont('helvetica', 'bold')
+          } else {
+            doc.setFont('helvetica', 'normal')
+          }
+          doc.text(String(cell || ''), x, y)
+          x += columnWidths[index]
+        })
+        y += rowHeight
+      }
+
+      drawRow(headers, true)
+      doc.line(margin, y - 10, pageWidth - margin, y - 10)
+
+      rows.forEach((row) => {
+        if (y > doc.internal.pageSize.getHeight() - 40) {
+          doc.addPage()
+          y = startY
+        }
+        drawRow(row)
+      })
+
+      const nombreArchivo = `ReporteVentas_${new Date().toISOString().slice(0, 10)}.pdf`
+      doc.save(nombreArchivo)
+      setOpenExportDialog(false)
+    } catch (error) {
+      console.error('Error exportando PDF del reporte:', error)
+      alert('No se pudo exportar el reporte a PDF. Revisa la consola para más detalles.')
+    }
   }
 
   const handleExportExcel = () => {
-    // Aquí iría la lógica de exportación a Excel
-    alert('Exportando a Excel...')
-    setOpenExportDialog(false)
+    try {
+      const datosExcel = ventasExport.map((venta) => ({
+        'N° Venta': venta.numero,
+        Fecha: venta.fecha,
+        Hora: venta.hora,
+        Cliente: venta.cliente.nombre,
+        Documento: venta.cliente.documento,
+        Método: venta.metodoPago,
+        Total: venta.total,
+        Productos: venta.productos.length,
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(datosExcel)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'ReporteVentas')
+      const nombreArchivo = `ReporteVentas_${new Date().toISOString().slice(0, 10)}.xlsx`
+      XLSX.writeFile(workbook, nombreArchivo)
+      setOpenExportDialog(false)
+    } catch (error) {
+      console.error('Error exportando Excel del reporte:', error)
+      alert('No se pudo exportar el reporte a Excel. Revisa la consola para más detalles.')
+    }
+  }
+
+  const handleExportWord = () => {
+    try {
+      const contenido = `
+        <html>
+          <head><meta charset="UTF-8" /></head>
+          <body>
+            <h1>Reporte de ventas</h1>
+            <p>Periodo: ${fechaInicio} al ${fechaFin}</p>
+            <table border="1" cellpadding="6" cellspacing="0">
+              <tr>
+                <th>N° Venta</th><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Método</th><th>Total</th>
+              </tr>
+              ${ventasExport.map((venta) => `
+                <tr>
+                  <td>${venta.numero}</td>
+                  <td>${venta.fecha}</td>
+                  <td>${venta.hora}</td>
+                  <td>${venta.cliente.nombre}</td>
+                  <td>${venta.metodoPago}</td>
+                  <td>${formatCurrency(venta.total)}</td>
+                </tr>
+              `).join('')}
+            </table>
+          </body>
+        </html>
+      `
+
+      const blob = new Blob([contenido], { type: 'application/msword' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `ReporteVentas_${new Date().toISOString().slice(0, 10)}.doc`
+      link.click()
+      URL.revokeObjectURL(url)
+      setOpenExportDialog(false)
+    } catch (error) {
+      console.error('Error exportando Word del reporte:', error)
+      alert('No se pudo exportar el reporte a Word. Revisa la consola para más detalles.')
+    }
+  }
+
+  const handlePrintReport = () => {
+    window.print()
   }
 
   const periodos = [
@@ -294,7 +419,7 @@ export const ReporteVentas = () => {
             <Button
               variant="contained"
               startIcon={<Print />}
-              onClick={handleExportPDF}
+              onClick={handlePrintReport}
               sx={{ bgcolor: theme.palette.primary.main, color: 'white', '&:hover': { bgcolor: theme.palette.primary.dark } }}
             >
               Imprimir
@@ -511,7 +636,10 @@ export const ReporteVentas = () => {
           <Button fullWidth variant="outlined" startIcon={<Download />} onClick={handleExportExcel} sx={{ mb: 2, py: 1.5 }}>
             Exportar a Excel
           </Button>
-          <Button fullWidth variant="outlined" startIcon={<Print />} onClick={handleExportPDF} sx={{ py: 1.5 }}>
+          <Button fullWidth variant="outlined" startIcon={<Download />} onClick={handleExportWord} sx={{ mb: 2, py: 1.5 }}>
+            Exportar a Word
+          </Button>
+          <Button fullWidth variant="outlined" startIcon={<Print />} onClick={handlePrintReport} sx={{ py: 1.5 }}>
             Imprimir
           </Button>
         </DialogContent>

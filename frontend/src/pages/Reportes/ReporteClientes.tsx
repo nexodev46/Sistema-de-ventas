@@ -38,6 +38,8 @@ import {
   Receipt,
   Download,
 } from '@mui/icons-material'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
 import { clienteService } from '../../services/clienteService'
 import { ventaService } from '../../services/ventaService'
 import { Cliente } from '../../types/cliente.types'
@@ -262,14 +264,128 @@ export const ReporteClientes = () => {
     setGastosPorRango(gastosRango)
   }
 
+  const formatCurrency = (value: number) => `S/ ${value.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
   const handleExportPDF = () => {
-    setOpenExportDialog(false)
-    window.print()
+    try {
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
+      const margin = 40
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const startY = 60
+      const rowHeight = 18
+      let y = startY
+
+      doc.setFontSize(16)
+      doc.text('Reporte de clientes', pageWidth / 2, 30, { align: 'center' })
+      doc.setFontSize(10)
+      doc.text(`Total clientes: ${stats.totalClientes}`, margin, 48)
+
+      const headers: string[] = ['Cliente', 'Documento', 'Compras', 'Monto Total']
+      const rows: string[][] = topClientes.map((cliente) => [
+        String(cliente.nombre || ''),
+        String(cliente.documento || ''),
+        String(cliente.compras || 0),
+        String(formatCurrency(Number(cliente.total || 0))),
+      ])
+
+      const columnWidths = [150, 120, 80, 120]
+
+      const drawRow = (row: string[], isHeader = false) => {
+        let x = margin
+        row.forEach((cell, index) => {
+          if (isHeader) {
+            doc.setFont('helvetica', 'bold')
+          } else {
+            doc.setFont('helvetica', 'normal')
+          }
+          doc.text(String(cell || ''), x, y)
+          x += columnWidths[index]
+        })
+        y += rowHeight
+      }
+
+      drawRow(headers, true)
+      doc.line(margin, y - 10, pageWidth - margin, y - 10)
+
+      rows.forEach((row) => {
+        if (y > doc.internal.pageSize.getHeight() - 40) {
+          doc.addPage()
+          y = startY
+        }
+        drawRow(row)
+      })
+
+      const nombreArchivo = `ReporteClientes_${new Date().toISOString().slice(0, 10)}.pdf`
+      doc.save(nombreArchivo)
+      setOpenExportDialog(false)
+    } catch (error) {
+      console.error('Error exportando PDF del reporte de clientes:', error)
+      alert('No se pudo exportar el reporte de clientes a PDF. Revisa la consola para más detalles.')
+    }
   }
 
   const handleExportExcel = () => {
-    alert('Exportando a Excel...')
-    setOpenExportDialog(false)
+    try {
+      const datosExcel = topClientes.map((cliente) => ({
+        Cliente: cliente.nombre,
+        Documento: cliente.documento,
+        'Total Compras': cliente.compras,
+        'Monto Total': cliente.total,
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(datosExcel)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'ReporteClientes')
+      const nombreArchivo = `ReporteClientes_${new Date().toISOString().slice(0, 10)}.xlsx`
+      XLSX.writeFile(workbook, nombreArchivo)
+      setOpenExportDialog(false)
+    } catch (error) {
+      console.error('Error exportando Excel del reporte de clientes:', error)
+      alert('No se pudo exportar el reporte de clientes a Excel. Revisa la consola para más detalles.')
+    }
+  }
+
+  const handleExportWord = () => {
+    try {
+      const contenido = `
+        <html>
+          <head><meta charset="UTF-8" /></head>
+          <body>
+            <h1>Reporte de clientes</h1>
+            <p>Total clientes: ${stats.totalClientes}</p>
+            <table border="1" cellpadding="6" cellspacing="0">
+              <tr>
+                <th>Cliente</th><th>Documento</th><th>Compras</th><th>Monto Total</th>
+              </tr>
+              ${topClientes.map((cliente) => `
+                <tr>
+                  <td>${cliente.nombre || ''}</td>
+                  <td>${cliente.documento || ''}</td>
+                  <td>${cliente.compras || 0}</td>
+                  <td>${formatCurrency(Number(cliente.total || 0))}</td>
+                </tr>
+              `).join('')}
+            </table>
+          </body>
+        </html>
+      `
+
+      const blob = new Blob([contenido], { type: 'application/msword' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `ReporteClientes_${new Date().toISOString().slice(0, 10)}.doc`
+      link.click()
+      URL.revokeObjectURL(url)
+      setOpenExportDialog(false)
+    } catch (error) {
+      console.error('Error exportando Word del reporte de clientes:', error)
+      alert('No se pudo exportar el reporte de clientes a Word. Revisa la consola para más detalles.')
+    }
+  }
+
+  const handlePrintReport = () => {
+    window.print()
   }
 
   // clientesFiltrados removed (not referenced)
@@ -328,7 +444,7 @@ export const ReporteClientes = () => {
             <Button
               variant="contained"
               startIcon={<Print />}
-              onClick={handleExportPDF}
+              onClick={handlePrintReport}
               sx={{ bgcolor: theme.palette.primary.main, color: 'white', '&:hover': { bgcolor: theme.palette.primary.dark } }}
             >
               Imprimir
@@ -544,7 +660,10 @@ export const ReporteClientes = () => {
           <Button fullWidth variant="outlined" startIcon={<Download />} onClick={handleExportExcel} sx={{ mb: 2, py: 1.5 }}>
             Exportar a Excel
           </Button>
-          <Button fullWidth variant="outlined" startIcon={<Print />} onClick={handleExportPDF} sx={{ py: 1.5 }}>
+          <Button fullWidth variant="outlined" startIcon={<Download />} onClick={handleExportWord} sx={{ mb: 2, py: 1.5 }}>
+            Exportar a Word
+          </Button>
+          <Button fullWidth variant="outlined" startIcon={<Print />} onClick={handlePrintReport} sx={{ py: 1.5 }}>
             Imprimir
           </Button>
         </DialogContent>

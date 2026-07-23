@@ -40,6 +40,8 @@ import {
   Download,
 } from '@mui/icons-material'
 import AttachMoney from '@mui/icons-material/AttachMoney'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
 import { productoService } from '../../services/productoService'
 import { categoriaService } from '../../services/categoriaService'
 import { marcaService } from '../../services/marcaService'
@@ -236,14 +238,136 @@ export const ReporteInventario = () => {
     setTopProductosValor(topValor)
   }
 
+  const formatCurrency = (value: number) => `S/ ${value.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
   const handleExportPDF = () => {
-    setOpenExportDialog(false)
-    window.print()
+    try {
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
+      const margin = 40
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const startY = 60
+      const rowHeight = 18
+      let y = startY
+
+      doc.setFontSize(16)
+      doc.text('Reporte de inventario', pageWidth / 2, 30, { align: 'center' })
+      doc.setFontSize(10)
+      doc.text(`Total productos: ${stats.totalProductos}`, margin, 48)
+
+      const headers: string[] = ['Código', 'Producto', 'Categoría', 'Stock', 'Stock Mín', 'Precio Venta']
+      const rows: string[][] = productos.map((producto) => [
+        String(producto.codigo || ''),
+        String(producto.nombre || ''),
+        String(producto.categoria || ''),
+        String(producto.stockActual || 0),
+        String(producto.stockMinimo || 0),
+        String(formatCurrency(producto.precioVenta || 0)),
+      ])
+
+      const columnWidths = [80, 150, 110, 55, 70, 90]
+
+      const drawRow = (row: string[], isHeader = false) => {
+        let x = margin
+        row.forEach((cell, index) => {
+          if (isHeader) {
+            doc.setFont('helvetica', 'bold')
+          } else {
+            doc.setFont('helvetica', 'normal')
+          }
+          doc.text(String(cell || ''), x, y)
+          x += columnWidths[index]
+        })
+        y += rowHeight
+      }
+
+      drawRow(headers, true)
+      doc.line(margin, y - 10, pageWidth - margin, y - 10)
+
+      rows.forEach((row) => {
+        if (y > doc.internal.pageSize.getHeight() - 40) {
+          doc.addPage()
+          y = startY
+        }
+        drawRow(row)
+      })
+
+      const nombreArchivo = `ReporteInventario_${new Date().toISOString().slice(0, 10)}.pdf`
+      doc.save(nombreArchivo)
+      setOpenExportDialog(false)
+    } catch (error) {
+      console.error('Error exportando PDF del reporte de inventario:', error)
+      alert('No se pudo exportar el reporte de inventario a PDF. Revisa la consola para más detalles.')
+    }
   }
 
   const handleExportExcel = () => {
-    alert('Exportando a Excel...')
-    setOpenExportDialog(false)
+    try {
+      const datosExcel = productos.map((producto) => ({
+        Código: producto.codigo,
+        Producto: producto.nombre,
+        Categoría: producto.categoria || '-',
+        'Stock Actual': producto.stockActual,
+        'Stock Mínimo': producto.stockMinimo,
+        'Precio Venta': producto.precioVenta,
+        'Precio Compra': producto.precioCompra,
+        Marca: producto.marca || '-',
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(datosExcel)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'ReporteInventario')
+      const nombreArchivo = `ReporteInventario_${new Date().toISOString().slice(0, 10)}.xlsx`
+      XLSX.writeFile(workbook, nombreArchivo)
+      setOpenExportDialog(false)
+    } catch (error) {
+      console.error('Error exportando Excel del reporte de inventario:', error)
+      alert('No se pudo exportar el reporte de inventario a Excel. Revisa la consola para más detalles.')
+    }
+  }
+
+  const handleExportWord = () => {
+    try {
+      const contenido = `
+        <html>
+          <head><meta charset="UTF-8" /></head>
+          <body>
+            <h1>Reporte de inventario</h1>
+            <p>Total productos: ${stats.totalProductos}</p>
+            <table border="1" cellpadding="6" cellspacing="0">
+              <tr>
+                <th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Stock Mín</th><th>Precio Venta</th>
+              </tr>
+              ${productos.map((producto) => `
+                <tr>
+                  <td>${producto.codigo || ''}</td>
+                  <td>${producto.nombre || ''}</td>
+                  <td>${producto.categoria || ''}</td>
+                  <td>${producto.stockActual || 0}</td>
+                  <td>${producto.stockMinimo || 0}</td>
+                  <td>${formatCurrency(producto.precioVenta || 0)}</td>
+                </tr>
+              `).join('')}
+            </table>
+          </body>
+        </html>
+      `
+
+      const blob = new Blob([contenido], { type: 'application/msword' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `ReporteInventario_${new Date().toISOString().slice(0, 10)}.doc`
+      link.click()
+      URL.revokeObjectURL(url)
+      setOpenExportDialog(false)
+    } catch (error) {
+      console.error('Error exportando Word del reporte de inventario:', error)
+      alert('No se pudo exportar el reporte de inventario a Word. Revisa la consola para más detalles.')
+    }
+  }
+
+  const handlePrintReport = () => {
+    window.print()
   }
 
   // productosFiltrados removed (not referenced)
@@ -312,7 +436,7 @@ export const ReporteInventario = () => {
             <Button
               variant="contained"
               startIcon={<Print />}
-              onClick={handleExportPDF}
+              onClick={handlePrintReport}
               sx={{ bgcolor: theme.palette.primary.main, color: 'white', '&:hover': { bgcolor: theme.palette.primary.dark } }}
             >
               Imprimir
@@ -562,7 +686,10 @@ export const ReporteInventario = () => {
           <Button fullWidth variant="outlined" startIcon={<Download />} onClick={handleExportExcel} sx={{ mb: 2, py: 1.5 }}>
             Exportar a Excel
           </Button>
-          <Button fullWidth variant="outlined" startIcon={<Print />} onClick={handleExportPDF} sx={{ py: 1.5 }}>
+          <Button fullWidth variant="outlined" startIcon={<Download />} onClick={handleExportWord} sx={{ mb: 2, py: 1.5 }}>
+            Exportar a Word
+          </Button>
+          <Button fullWidth variant="outlined" startIcon={<Print />} onClick={handlePrintReport} sx={{ py: 1.5 }}>
             Imprimir
           </Button>
         </DialogContent>
