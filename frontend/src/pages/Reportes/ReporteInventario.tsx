@@ -243,16 +243,25 @@ export const ReporteInventario = () => {
   const handleExportPDF = () => {
     try {
       const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
-      const margin = 40
+      const margin = 36
       const pageWidth = doc.internal.pageSize.getWidth()
-      const startY = 60
+      const pageHeight = doc.internal.pageSize.getHeight()
+      const startY = 72
       const rowHeight = 18
       let y = startY
 
+      doc.setFillColor(16, 185, 129)
+      doc.rect(0, 0, pageWidth, 48, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFont('helvetica', 'bold')
       doc.setFontSize(16)
-      doc.text('Reporte de inventario', pageWidth / 2, 30, { align: 'center' })
-      doc.setFontSize(10)
-      doc.text(`Total productos: ${stats.totalProductos}`, margin, 48)
+      doc.text('Reporte de inventario', pageWidth / 2, 22, { align: 'center' })
+      doc.setFontSize(9)
+      doc.text(`Total productos: ${stats.totalProductos}`, margin, 36)
+
+      doc.setTextColor(0, 0, 0)
+      doc.setDrawColor(220, 252, 231)
+      doc.line(margin, 54, pageWidth - margin, 54)
 
       const headers: string[] = ['Código', 'Producto', 'Categoría', 'Stock', 'Stock Mín', 'Precio Venta']
       const rows: string[][] = productos.map((producto) => [
@@ -267,14 +276,19 @@ export const ReporteInventario = () => {
       const columnWidths = [80, 150, 110, 55, 70, 90]
 
       const drawRow = (row: string[], isHeader = false) => {
+        const currentY = y
         let x = margin
+        if (isHeader) {
+          doc.setFillColor(245, 247, 250)
+          doc.rect(margin, currentY - 14, pageWidth - margin * 2, 20, 'F')
+        }
         row.forEach((cell, index) => {
           if (isHeader) {
             doc.setFont('helvetica', 'bold')
           } else {
             doc.setFont('helvetica', 'normal')
           }
-          doc.text(String(cell || ''), x, y)
+          doc.text(String(cell || ''), x, currentY)
           x += columnWidths[index]
         })
         y += rowHeight
@@ -284,7 +298,7 @@ export const ReporteInventario = () => {
       doc.line(margin, y - 10, pageWidth - margin, y - 10)
 
       rows.forEach((row) => {
-        if (y > doc.internal.pageSize.getHeight() - 40) {
+        if (y > pageHeight - 48) {
           doc.addPage()
           y = startY
         }
@@ -680,18 +694,23 @@ export const ReporteInventario = () => {
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <Button fullWidth variant="outlined" startIcon={<PictureAsPdf />} onClick={handleExportPDF} sx={{ mb: 2, py: 1.5 }}>
-            Exportar a PDF
-          </Button>
-          <Button fullWidth variant="outlined" startIcon={<Download />} onClick={handleExportExcel} sx={{ mb: 2, py: 1.5 }}>
-            Exportar a Excel
-          </Button>
-          <Button fullWidth variant="outlined" startIcon={<Download />} onClick={handleExportWord} sx={{ mb: 2, py: 1.5 }}>
-            Exportar a Word
-          </Button>
-          <Button fullWidth variant="outlined" startIcon={<Print />} onClick={handlePrintReport} sx={{ py: 1.5 }}>
-            Imprimir
-          </Button>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Elige el formato para guardar o imprimir el reporte actual.
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <Button fullWidth variant="outlined" startIcon={<PictureAsPdf />} onClick={handleExportPDF} sx={{ py: 1.5 }}>
+              Exportar a PDF
+            </Button>
+            <Button fullWidth variant="outlined" startIcon={<Download />} onClick={handleExportExcel} sx={{ py: 1.5 }}>
+              Exportar a Excel
+            </Button>
+            <Button fullWidth variant="outlined" startIcon={<Download />} onClick={handleExportWord} sx={{ py: 1.5 }}>
+              Exportar a Word
+            </Button>
+            <Button fullWidth variant="outlined" startIcon={<Print />} onClick={handlePrintReport} sx={{ py: 1.5 }}>
+              Imprimir
+            </Button>
+          </Box>
         </DialogContent>
       </Dialog>
     </Box>
