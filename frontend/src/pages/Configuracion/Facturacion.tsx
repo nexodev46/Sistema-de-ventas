@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -10,7 +10,6 @@ import {
   IconButton,
   Button,
   Chip,
-  Tooltip,
   CircularProgress,
   useTheme,
   alpha,
@@ -39,26 +38,17 @@ import {
   Receipt,
   Save,
   Print,
-  Download,
   PictureAsPdf,
-  Email,
-  WhatsApp,
-  Edit,
-  Add,
-  Delete,
   Close,
-  CheckCircle,
   Business,
-  AttachMoney,
   QrCode,
   Visibility,
-  LocalPrintshop,
 } from '@mui/icons-material'
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore'
 import { db } from '../../services/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSnackbar } from 'notistack'
-import { motion } from 'framer-motion'
+// motion removed (unused)
 import { facturaPdfService } from '../../services/facturaPdfService'
 
 // Plantillas de factura
@@ -110,7 +100,7 @@ export const Facturacion = () => {
     },
   })
 
-  const [nuevaSerie, setNuevaSerie] = useState({ serie: '', numero: 1 })
+  // removed unused nuevaSerie state
 
   useEffect(() => {
     const unsubscribe = cargarConfiguracion()

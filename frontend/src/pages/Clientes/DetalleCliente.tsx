@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  alpha,
   Box,
   Button,
   Card,
@@ -28,29 +27,31 @@ export const DetalleCliente = () => {
   const [error, setError] = useState<string>('')
 
   useEffect(() => {
-    const fetchCliente = async () => {
-      if (!id) {
-        setError('ID de cliente inválido.')
-        setLoading(false)
-        return
-      }
+    if (!id) {
+      setError('ID de cliente inválido.')
+      setLoading(false)
+      return
+    }
 
-      try {
-        const result = await clienteService.getById(id)
+    const unsubscribe = clienteService.subscribeById(
+      id,
+      (result) => {
         if (!result) {
           setError('No se encontró el cliente solicitado.')
         } else {
           setCliente(result)
+          setError('')
         }
-      } catch (e) {
-        console.error('Error cargando cliente:', e)
+        setLoading(false)
+      },
+      (error) => {
+        console.error('Error cargando cliente:', error)
         setError('Ocurrió un error al cargar los detalles del cliente.')
-      } finally {
         setLoading(false)
       }
-    }
+    )
 
-    fetchCliente()
+    return () => unsubscribe()
   }, [id])
 
   return (
@@ -145,6 +146,10 @@ export const DetalleCliente = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography color="text.secondary">Compras</Typography>
                     <Typography fontWeight="bold">{cliente.totalCompras || 0}</Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography color="text.secondary">Total gastado</Typography>
+                    <Typography fontWeight="bold">S/ {(cliente.totalGastado || 0).toLocaleString()}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography color="text.secondary">Última compra</Typography>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -27,10 +27,6 @@ import {
   DialogContent,
   DialogActions,
   Alert,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Switch,
   FormControlLabel,
 } from '@mui/material'
@@ -42,22 +38,19 @@ import {
   Backup,
   Restore,
   Clear,
-  CheckCircle,
   Warning,
   InsertDriveFile,
   Image,
   PictureAsPdf,
-  Description,
   Close,
   Refresh,
-  Dataset,
   Speed,
 } from '@mui/icons-material'
 import { db } from '../../services/firebase'
-import { collection, getDocs, doc, setDoc, writeBatch } from 'firebase/firestore'
-import { useAuth } from '../../contexts/AuthContext'
+import { collection, getDocs, doc, writeBatch } from 'firebase/firestore'
+// useAuth removed (not used)
 import { useSnackbar } from 'notistack'
-import { motion } from 'framer-motion'
+// motion removed (unused)
 
 interface ArchivoInfo {
   nombre: string
@@ -77,7 +70,6 @@ interface CarpetaInfo {
 
 export const Almacenamiento = () => {
   const theme = useTheme()
-  const { user } = useAuth()
   const { enqueueSnackbar } = useSnackbar()
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -86,8 +78,8 @@ export const Almacenamiento = () => {
   const [clearLoading, setClearLoading] = useState(false)
   const [archivos, setArchivos] = useState<ArchivoInfo[]>([])
   const [espacioUsado, setEspacioUsado] = useState(0)
-  const [limiteEspacio, setLimiteEspacio] = useState(5 * 1024 * 1024 * 1024) // 5 GB
-  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null)
+  const [limiteEspacio] = useState(5 * 1024 * 1024 * 1024) // 5 GB
+  const [, setLastRefreshed] = useState<Date | null>(null)
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
   const [archivoAEliminar, setArchivoAEliminar] = useState<ArchivoInfo | null>(null)
   const [openClearDialog, setOpenClearDialog] = useState(false)

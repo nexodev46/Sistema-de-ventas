@@ -5,10 +5,66 @@ const rateLimit = require('express-rate-limit')
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
+const admin = require('firebase-admin')
+require('dotenv').config()
 
 const app = express()
 const PORT = process.env.PORT || 4000
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3000'
+
+if (process.env.NODE_ENV === 'production' && !process.env.FRONTEND_ORIGIN) {
+  console.error('FRONTEND_ORIGIN must be set in production for CORS security.')
+  process.exit(1)
+}
+
+const firebaseServiceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
+const firebaseAdminConfigured = Boolean(firebaseServiceAccount || process.env.GOOGLE_APPLICATION_CREDENTIALS)
+let firebaseApp = null
+
+if (firebaseAdminConfigured) {
+  if (firebaseServiceAccount) {
+    try {
+      firebaseApp = admin.initializeApp({
+        credential: admin.credential.cert(JSON.parse(firebaseServiceAccount)),
+      })
+      console.log('Firebase Admin initialized using FIREBASE_SERVICE_ACCOUNT')
+    } catch (err) {
+      console.error('Failed to initialize Firebase Admin from FIREBASE_SERVICE_ACCOUNT:', err)
+      process.exit(1)
+    }
+  } else {
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+    })
+    console.log('Firebase Admin initialized using application default credentials')
+  }
+} else if (process.env.NODE_ENV === 'production') {
+  console.error('FIREBASE_SERVICE_ACCOUNT or GOOGLE_APPLICATION_CREDENTIALS must be set in production to verify Firebase ID tokens.')
+  process.exit(1)
+} else {
+  console.warn('Firebase Admin is not configured. Protected routes will be available without token verification in development.')
+}
+
+const requireAuth = async (req, res, next) => {
+  if (!firebaseApp) {
+    return next()
+  }
+
+  const authHeader = req.headers.authorization || req.headers.Authorization
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authorization token is required' })
+  }
+
+  const idToken = authHeader.split(' ')[1]
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken)
+    req.user = decodedToken
+    next()
+  } catch (error) {
+    console.error('Firebase token verification failed:', error)
+    return res.status(401).json({ error: 'Invalid or expired token' })
+  }
+}
 
 app.use(helmet())
 app.disable('x-powered-by')
@@ -180,7 +236,7 @@ const uploadLimiter = rateLimit({
 })
 
 // Endpoint para subir múltiples imágenes de producto
-app.post('/api/uploads/productos/:productoId', uploadLimiter, upload.array('files', 10), (req, res) => {
+app.post('/api/uploads/productos/:productoId', requireAuth, uploadLimiter, upload.array('files', 10), (req, res) => {
   const files = req.files || []
   const productoId = req.params.productoId
   const urls = files.map(f => {
@@ -191,7 +247,7 @@ app.post('/api/uploads/productos/:productoId', uploadLimiter, upload.array('file
 })
 
 // Endpoint para subir imagen de marca
-app.post('/api/uploads/marcas/:marcaId', uploadLimiter, upload.array('files', 1), (req, res) => {
+app.post('/api/uploads/marcas/:marcaId', requireAuth, uploadLimiter, upload.array('files', 1), (req, res) => {
   const files = req.files || []
   const marcaId = sanitizeId(req.params.marcaId)
   const urls = files.map(f => {
@@ -202,7 +258,7 @@ app.post('/api/uploads/marcas/:marcaId', uploadLimiter, upload.array('files', 1)
 })
 
 // Endpoint para subir imagen de perfil
-app.post('/api/uploads/perfiles/:userId', uploadLimiter, upload.array('files', 1), (req, res) => {
+app.post('/api/uploads/perfiles/:userId', requireAuth, uploadLimiter, upload.array('files', 1), (req, res) => {
   const files = req.files || []
   const userId = sanitizeId(req.params.userId)
   const urls = files.map(f => {
@@ -218,7 +274,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true }))
 // ===== STRIPE PAYMENT ENDPOINTS =====
 const { createPaymentIntent, createSubscription, cancelSubscription } = require('./stripe-service')
 
-app.post('/api/payment/create-subscription', async (req, res) => {
+app.post('/api/payment/create-subscription', requireAuth, async (req, res) => {
   const { email, priceId } = req.body
   try {
     if (!email || !priceId) {
@@ -231,7 +287,7 @@ app.post('/api/payment/create-subscription', async (req, res) => {
   }
 })
 
-app.post('/api/payment/cancel-subscription', async (req, res) => {
+app.post('/api/payment/cancel-subscription', requireAuth, async (req, res) => {
   const { subscriptionId } = req.body
   try {
     if (!subscriptionId) {
@@ -253,7 +309,12 @@ app.post('/api/support/contact', async (req, res) => {
     if (!name || !email || !message) {
       return res.status(400).json({ error: 'Campos requeridos: name, email, message' })
     }
-    await sendSupportEmail(name, email, message, subject)
+    await sendSupportEmail(
+      String(name).replace(/[<>]/g, ''),
+      String(email).replace(/[<>]/g, ''),
+      String(message),
+      String(subject || '').replace(/[<>]/g, '')
+    )
     res.json({ ok: true, message: 'Email enviado correctamente' })
   } catch (error) {
     console.error('Support email error:', error)

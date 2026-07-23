@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   Avatar,
-  IconButton,
   Button,
   Chip,
   Tooltip,
@@ -17,14 +16,9 @@ import {
   Divider,
   Switch,
   FormControlLabel,
-  Slider,
-  Radio,
-  RadioGroup,
   FormControl,
-  FormLabel,
   Select,
   MenuItem,
-  InputLabel,
 } from '@mui/material'
 import {
   Palette,
@@ -32,13 +26,8 @@ import {
   LightMode,
   Visibility,
   CheckCircle,
-  Brush,
-  FormatSize,
   Crop,
-  ColorLens,
   DesktopWindows,
-  TabletMac,
-  PhoneAndroid,
 } from '@mui/icons-material'
 import { useThemeMode } from '../../contexts/ThemeContext'
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore'
@@ -46,7 +35,7 @@ import { useSidebar } from '../../contexts/SidebarContext'
 import { db } from '../../services/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSnackbar } from 'notistack'
-import { motion } from 'framer-motion'
+// motion removed (not used)
  
 
 // Colores predefinidos
@@ -99,7 +88,7 @@ const vistasDashboard = [
 
 export const Apariencia = () => {
   const theme = useTheme()
-  const { darkMode, toggleDarkMode, setDarkMode, primaryColor, setPrimaryColor, mostrarAnimaciones, setMostrarAnimaciones, reducirMovimiento, setReducirMovimiento } = useThemeMode()
+  const { darkMode, setDarkMode, setPrimaryColor, setMostrarAnimaciones, setReducirMovimiento } = useThemeMode()
   const { setCollapsed } = useSidebar()
   const { user } = useAuth()
   const { enqueueSnackbar } = useSnackbar()

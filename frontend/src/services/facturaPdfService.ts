@@ -2,6 +2,15 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import { Venta } from '../types/venta.types'
 
+const escapeHtml = (value: any): string => {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 // Interfaz para la configuración de facturación
 export interface ConfiguracionFactura {
   empresa: {
@@ -103,10 +112,10 @@ export const facturaPdfService = {
     const productosHTML = productos.map(
       (item: any) => `
         <tr>
-          <td style="padding: 10px; border: 1px solid #ddd;">${item.nombre || 'Producto'}</td>
-          <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${item.cantidad}</td>
-          <td style="padding: 10px; text-align: right; border: 1px solid #ddd;">${config.factura.simbolo}${(item.precio || 0).toFixed(2)}</td>
-          <td style="padding: 10px; text-align: right; border: 1px solid #ddd;">${config.factura.simbolo}${(item.cantidad * (item.precio || 0)).toFixed(2)}</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">${escapeHtml(item.nombre || 'Producto')}</td>
+          <td style="padding: 10px; text-align: center; border: 1px solid #ddd;">${escapeHtml(item.cantidad)}</td>
+          <td style="padding: 10px; text-align: right; border: 1px solid #ddd;">${escapeHtml(config.factura.simbolo)}${escapeHtml((item.precio || 0).toFixed(2))}</td>
+          <td style="padding: 10px; text-align: right; border: 1px solid #ddd;">${escapeHtml(config.factura.simbolo)}${escapeHtml((item.cantidad * (item.precio || 0)).toFixed(2))}</td>
         </tr>
       `
     ).join('')
@@ -115,10 +124,10 @@ export const facturaPdfService = {
       <div id="factura-printable" style="font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 30px; background: white; color: #333;">
         <!-- Encabezado -->
         <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #1976d2; padding-bottom: 20px;">
-          <h1 style="margin: 0; color: #1976d2; font-size: 28px;">${config.empresa.nombre || 'MI EMPRESA'}</h1>
-          <p style="margin: 8px 0; font-size: 13px; font-weight: bold;">RUC: ${config.empresa.ruc || 'No registrado'}</p>
-          <p style="margin: 3px 0; font-size: 12px;">${config.empresa.direccion || 'Dirección no registrada'}</p>
-          <p style="margin: 3px 0; font-size: 12px;">Tel: ${config.empresa.telefono || '-'} | Email: ${config.empresa.email || '-'}</p>
+          <h1 style="margin: 0; color: #1976d2; font-size: 28px;">${escapeHtml(config.empresa.nombre || 'MI EMPRESA')}</h1>
+          <p style="margin: 8px 0; font-size: 13px; font-weight: bold;">RUC: ${escapeHtml(config.empresa.ruc || 'No registrado')}</p>
+          <p style="margin: 3px 0; font-size: 12px;">${escapeHtml(config.empresa.direccion || 'Dirección no registrada')}</p>
+          <p style="margin: 3px 0; font-size: 12px;">Tel: ${escapeHtml(config.empresa.telefono || '-')} | Email: ${escapeHtml(config.empresa.email || '-')}</p>
         </div>
 
         <!-- Sección: Número y Fecha de Factura -->
@@ -126,7 +135,7 @@ export const facturaPdfService = {
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <div>
               <p style="margin: 0; font-size: 12px; color: #666; text-transform: uppercase;">Número de Factura</p>
-              <p style="margin: 8px 0; font-size: 22px; color: #1976d2; font-weight: bold;">${numeroFactura}</p>
+              <p style="margin: 8px 0; font-size: 22px; color: #1976d2; font-weight: bold;">${escapeHtml(numeroFactura)}</p>
             </div>
             <div style="text-align: right;">
               <p style="margin: 0; font-size: 12px; color: #666;">Fecha de Emisión</p>
@@ -139,11 +148,11 @@ export const facturaPdfService = {
         <!-- Datos del cliente -->
         <div style="margin-bottom: 25px; padding: 15px; background-color: #f9f9f9; border-radius: 4px;">
           <p style="margin: 0 0 10px 0; font-weight: bold; font-size: 13px; text-transform: uppercase; color: #1976d2;">Datos del Cliente</p>
-          <p style="margin: 5px 0; font-size: 13px;"><strong>Nombre:</strong> ${venta.cliente?.nombre || 'Cliente Genérico'}</p>
-          ${venta.cliente?.documento ? `<p style="margin: 5px 0; font-size: 13px;"><strong>DNI/RUC:</strong> ${venta.cliente.documento}</p>` : ''}
-          ${venta.cliente?.email ? `<p style="margin: 5px 0; font-size: 13px;"><strong>Email:</strong> ${venta.cliente.email}</p>` : ''}
-          ${venta.cliente?.telefono ? `<p style="margin: 5px 0; font-size: 13px;"><strong>Teléfono:</strong> ${venta.cliente.telefono}</p>` : ''}
-          ${venta.cliente?.direccion ? `<p style="margin: 5px 0; font-size: 13px;"><strong>Dirección:</strong> ${venta.cliente.direccion}</p>` : ''}
+          <p style="margin: 5px 0; font-size: 13px;"><strong>Nombre:</strong> ${escapeHtml(venta.cliente?.nombre || 'Cliente Genérico')}</p>
+          ${venta.cliente?.documento ? `<p style="margin: 5px 0; font-size: 13px;"><strong>DNI/RUC:</strong> ${escapeHtml(venta.cliente.documento)}</p>` : ''}
+          ${venta.cliente?.email ? `<p style="margin: 5px 0; font-size: 13px;"><strong>Email:</strong> ${escapeHtml(venta.cliente.email)}</p>` : ''}
+          ${venta.cliente?.telefono ? `<p style="margin: 5px 0; font-size: 13px;"><strong>Teléfono:</strong> ${escapeHtml(venta.cliente.telefono)}</p>` : ''}
+          ${venta.cliente?.direccion ? `<p style="margin: 5px 0; font-size: 13px;"><strong>Dirección:</strong> ${escapeHtml(venta.cliente.direccion)}</p>` : ''}
         </div>
 
         <!-- Tabla de productos -->
@@ -191,9 +200,9 @@ export const facturaPdfService = {
 
         <!-- Información adicional -->
         <div style="border-top: 1px solid #ddd; padding-top: 20px; margin-top: 20px;">
-          <p style="margin: 8px 0; text-align: center; font-size: 13px; color: #333; font-style: italic;">"${config.factura.piePagina || '¡Gracias por su compra!'}"</p>
+          <p style="margin: 8px 0; text-align: center; font-size: 13px; color: #333; font-style: italic;">"${escapeHtml(config.factura.piePagina || '¡Gracias por su compra!')}"</p>
           ${config.factura.terminos
-        ? `<p style="margin: 8px 0; text-align: center; color: #999; font-size: 11px;">${config.factura.terminos}</p>`
+        ? `<p style="margin: 8px 0; text-align: center; color: #999; font-size: 11px;">${escapeHtml(config.factura.terminos)}</p>`
         : ''
       }
           <p style="margin-top: 15px; text-align: center; color: #999; font-size: 10px;">Documento generado automáticamente el ${new Date().toLocaleString('es-PE')}</p>

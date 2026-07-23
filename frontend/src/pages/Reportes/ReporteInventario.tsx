@@ -10,47 +10,34 @@ import {
   IconButton,
   Button,
   Chip,
-  Tooltip,
-  CircularProgress,
   useTheme,
   alpha,
-  TextField,
-  InputAdornment,
-  Menu,
-  MenuItem,
-  Fade,
   Zoom,
   Divider,
-  Tabs,
-  Tab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from '@mui/material'
 import {
   Inventory,
-  Download,
   PictureAsPdf,
   Print,
-  Search,
   TrendingUp,
-  TrendingDown,
   Warning,
   CheckCircle,
   Category,
   LocalOffer,
   Close,
-  DateRange,
   Assessment,
   PieChart as PieChartIcon,
   Timeline,
+  Download,
 } from '@mui/icons-material'
 import AttachMoney from '@mui/icons-material/AttachMoney'
 import { productoService } from '../../services/productoService'
@@ -72,8 +59,6 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   Legend,
-  LineChart,
-  Line,
 } from 'recharts'
 
 // Componente de tarjeta de estadística
@@ -111,7 +96,7 @@ const StatCard = ({ title, value, icon, color, prefix = '', suffix = '', delay =
   )
 }
 
-const coloresStock = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+// coloresStock removed (not referenced)
 
 export const ReporteInventario = () => {
   const theme = useTheme()
@@ -119,8 +104,6 @@ export const ReporteInventario = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [marcas, setMarcas] = useState<Marca[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [tabValue, setTabValue] = useState(0)
   const [openExportDialog, setOpenExportDialog] = useState(false)
 
   // Datos para gráficos
@@ -263,10 +246,7 @@ export const ReporteInventario = () => {
     setOpenExportDialog(false)
   }
 
-  const productosFiltrados = productos.filter(p =>
-    p.nombre.toLowerCase().includes(search.toLowerCase()) ||
-    p.codigo.toLowerCase().includes(search.toLowerCase())
-  )
+  // productosFiltrados removed (not referenced)
 
   const chartCardProps = {
     p: 3,

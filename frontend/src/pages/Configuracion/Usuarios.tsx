@@ -25,50 +25,36 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Switch,
-  FormControlLabel,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  
+  
   Tabs,
   Tab,
   Badge,
   Alert,
   Divider,
-  Fade,
   Zoom,
 } from '@mui/material'
 import {
   People,
   Search,
-  Add,
   Edit,
   Delete,
-  Lock,
   AdminPanelSettings,
   Person,
   PersonAdd,
   Email,
-  Phone,
   Badge as BadgeIcon,
   CheckCircle,
   Cancel,
-  MoreVert,
-  Visibility,
   Block,
-  Settings,
   Security,
-  VerifiedUser,
   SupervisorAccount,
   Storefront,
 } from '@mui/icons-material'
 import { firebaseAuthService, UserData } from '../../services/firebaseAuthService'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSnackbar } from 'notistack'
-import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'
+import { doc, updateDoc } from 'firebase/firestore'
 import { db } from '../../services/firebase'
 import { motion } from 'framer-motion'
  
@@ -113,7 +99,7 @@ const StatCard = ({ title, value, icon, color, delay = 0 }: any) => {
 // Componente de tarjeta de usuario
 const UserCard = ({ user, onEdit, onDelete, onToggleStatus, currentUser }: any) => {
   const theme = useTheme()
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  
 
   const getRoleColor = (rol: string) => {
     switch (rol) {
@@ -503,7 +489,7 @@ export const Usuarios = () => {
         </Paper>
       ) : (
         <Grid container spacing={3}>
-          {filtered.map((user, idx) => (
+          {filtered.map((user) => (
             <UserCard
               key={user.uid}
               user={user}

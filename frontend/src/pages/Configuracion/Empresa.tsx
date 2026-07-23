@@ -17,14 +17,9 @@ import {
   TextField,
   InputAdornment,
   Divider,
-  Switch,
-  FormControlLabel,
   Stepper,
   Step,
   StepLabel,
-  Alert,
-  Fade,
-  Zoom,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -40,16 +35,13 @@ import {
   LocationOn,
   Receipt,
   Language,
-  Description,
   WhatsApp,
   Facebook,
   Instagram,
   Twitter,
   Share,
-  CheckCircle,
   Close,
   Edit,
-  QrCode,
   Settings,
 } from '@mui/icons-material'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
@@ -99,7 +91,7 @@ export const Empresa = () => {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [, setUploadProgress] = useState(0)
   const [activeStep, setActiveStep] = useState(0)
   const [formData, setFormData] = useState<EmpresaData>({
     nombre: '',
@@ -209,7 +201,6 @@ export const Empresa = () => {
 
     try {
       let logoUrl = ''
-      let logoPath = ''
 
       // Primer intento: upload al servidor local para evitar CORS de Firebase en localhost
       try {
@@ -513,7 +504,7 @@ export const Empresa = () => {
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 4, borderRadius: 3 }}>
             <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-              {steps.map((label, idx) => (
+              {steps.map((label) => (
                 <Step key={label}>
                   <StepLabel>{label}</StepLabel>
                 </Step>

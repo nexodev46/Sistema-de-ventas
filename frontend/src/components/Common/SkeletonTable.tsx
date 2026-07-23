@@ -1,4 +1,3 @@
-import React from 'react'
 import {
   Box,
   Skeleton,
@@ -52,8 +51,6 @@ export const SkeletonTable = ({ rows = 8, columns = 6, hasHeader = true }: { row
 }
 
 export const SkeletonDashboardCard = () => {
-  const theme = useTheme()
-
   return (
     <Paper sx={{ borderRadius: 2, p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>

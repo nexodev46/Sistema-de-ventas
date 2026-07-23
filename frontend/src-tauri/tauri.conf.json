@@ -3,12 +3,12 @@
   "build": {
     "beforeDevCommand": "npm run dev -- --host 0.0.0.0",
     "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:3001",
+    "devPath": "http://localhost:3002",
     "distDir": "../dist",
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "Task Core Sales",
+    "productName": "Sistema Ventas",
     "version": "1.0.0"
   },
   "tauri": {
@@ -17,7 +17,7 @@
     },
     "windows": [
       {
-        "title": "Task Core Sales",
+        "title": "Sistema Ventas",
         "width": 1400,
         "height": 900,
         "resizable": true,
@@ -30,8 +30,9 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.taskcoresales.app",
+      "identifier": "com.sistemaventas.app",
       "icon": [
+        "icons/icon.ico",
         "icons/32x32.png",
         "icons/icon.icns"
       ]

@@ -12,7 +12,6 @@ import {
   InputAdornment,
   Button,
   Chip,
-  Tooltip,
   CircularProgress,
   Menu,
   MenuItem,
@@ -21,15 +20,8 @@ import {
   useTheme,
   alpha,
   Divider,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TablePagination,
-  Tabs,
-  Tab,
+  
 } from '@mui/material'
 import {
   PersonAdd,
@@ -43,12 +35,9 @@ import {
   LocationOn,
   Receipt,
   TrendingUp,
-  CalendarToday,
   FileCopy,
   PictureAsPdf,
-  Download,
   Star,
-  StarBorder,
 } from '@mui/icons-material'
 import { clienteService } from '../../services/clienteService'
 import { Cliente } from '../../types/cliente.types'
@@ -192,7 +181,7 @@ const ClientCard = ({ cliente, onEdit, onDelete, onView }: any) => {
                 <Box sx={{ textAlign: 'center' }}>
                   <Typography variant="caption" color="text.secondary">Total gastado</Typography>
                   <Typography variant="subtitle1" fontWeight="bold" color="primary.main">
-                    S/ {(cliente.totalCompras * 100).toLocaleString()}
+                    S/ {(cliente.totalGastado || 0).toLocaleString()}
                   </Typography>
                 </Box>
               </Grid>
@@ -241,7 +230,7 @@ export const ListadoClientes = () => {
   const [filtered, setFiltered] = useState<Cliente[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
+  // viewMode removed (not referenced)
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(12)
 
@@ -335,10 +324,6 @@ export const ListadoClientes = () => {
       doc.setFontSize(10)
 
       const columnWidths = [120, 140, 100, 90, 90, 60]
-      const xPositions = columnWidths.reduce<number[]>((acc, width, index) => {
-        if (index === 0) return [margin]
-        return [...acc, acc[index - 1] + columnWidths[index - 1]]
-      }, [])
 
       const drawRow = (row: string[], isHeader = false) => {
         let x = margin

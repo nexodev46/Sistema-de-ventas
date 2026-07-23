@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -7,10 +7,7 @@ import {
   Card,
   CardContent,
   Avatar,
-  IconButton,
   Button,
-  Chip,
-  Tooltip,
   CircularProgress,
   useTheme,
   alpha,
@@ -20,8 +17,8 @@ import {
   Slider,
   Select,
   MenuItem,
-  FormControl,
   InputLabel,
+  FormControl,
   Alert,
   Snackbar,
 } from '@mui/material'
@@ -42,14 +39,13 @@ import {
   Campaign,
   Schedule,
   CheckCircle,
-  Close,
   Science,
 } from '@mui/icons-material'
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore'
 import { db } from '../../services/firebase'
 import { useAuth } from '../../contexts/AuthContext'
 import { useSnackbar } from 'notistack'
-import { motion } from 'framer-motion'
+// motion removed (unused)
  
 
 // Tipos de eventos para notificaciones

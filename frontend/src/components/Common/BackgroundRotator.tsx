@@ -9,23 +9,19 @@ interface Props {
 
 const BackgroundRotator: React.FC<Props> = ({ images, interval = 5000, opacity = 0.35 }) => {
   const [index, setIndex] = useState(0)
-  const [prev, setPrev] = useState<number | null>(null)
 
   useEffect(() => {
     if (!images || images.length === 0) return
     const t = setInterval(() => {
-      setPrev(index)
       setIndex((i) => (i + 1) % images.length)
     }, interval)
     return () => clearInterval(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [images.length, interval])
 
   return (
     <Box sx={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
       {images.map((src, i) => {
         const isCurrent = i === index
-        const isPrev = i === prev
         return (
           <Box
             key={i}

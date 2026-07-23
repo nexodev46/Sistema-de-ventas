@@ -1,4 +1,3 @@
-import React from 'react'
 import { Box, Grid, useTheme } from '@mui/material'
 import { SkeletonProductCardGrid } from './SkeletonProductCard'
 import { SkeletonTable, SkeletonDashboardGrid } from './SkeletonTable'

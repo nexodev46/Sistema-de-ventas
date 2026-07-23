@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type MouseEvent, type KeyboardEvent } from 'react'
+import { useState, useEffect, useRef, type MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   AppBar,

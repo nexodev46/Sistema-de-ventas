@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { alpha, Box, Button, Card, CardContent, CardMedia, Chip, CircularProgress, Divider, Grid, Paper, Stack, Typography, useTheme } from '@mui/material'
+import { alpha, Box, Button, Card, CardMedia, Chip, CircularProgress, Divider, Grid, Paper, Stack, Typography, useTheme } from '@mui/material'
 import { ArrowBack, Inventory, LocalOffer, Category, ShoppingCart } from '@mui/icons-material'
 import { productoService } from '../../../services/productoService'
 import { Producto } from '../../../types/producto.types'

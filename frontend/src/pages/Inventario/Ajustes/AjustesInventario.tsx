@@ -36,7 +36,6 @@ import {
   Step,
   StepLabel,
   Alert,
-  Fade,
   Zoom,
   Divider,
 } from '@mui/material'
@@ -44,26 +43,19 @@ import {
   Tune,
   Search,
   Close,
-  Save,
+  
   Warning,
   CheckCircle,
   TrendingUp,
   TrendingDown,
-  Inventory,
-  LocalOffer,
-  CalendarToday,
-  Person,
-  Edit,
   Delete,
-  ArrowBack,
-  Refresh,
 } from '@mui/icons-material'
 import { productoService } from '../../../services/productoService'
 import { ajusteService } from '../../../services/ajusteService'
 import { Producto } from '../../../types/producto.types'
 import { AjusteInventario } from '../../../types/ajuste.types'
 import { useAuth } from '../../../contexts/AuthContext'
-import { motion } from 'framer-motion'
+
 
 // Componente de tarjeta de estadística
 const StatCard = ({ title, value, icon, color, prefix = '', delay = 0 }: any) => {
@@ -238,7 +230,6 @@ export const AjustesInventario = () => {
 
   const diferencia = selectedProducto ? formData.nuevaCantidad - selectedProducto.stockActual : 0
   const esAumento = diferencia > 0
-  const esDisminucion = diferencia < 0
 
   const ajustesFiltrados = ajustes.filter(a => {
     if (tabValue === 1) return a.diferencia > 0

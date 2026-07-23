@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -14,7 +14,6 @@ import {
   Button,
   Chip,
   Tooltip,
-  CircularProgress,
   Menu,
   MenuItem,
   Fade,
@@ -356,7 +355,6 @@ export const ListadoProductos = () => {
   const [filtered, setFiltered] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [filterAnchor, setFilterAnchor] = useState<null | HTMLElement>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [categories, setCategories] = useState<string[]>([])
@@ -591,7 +589,7 @@ export const ListadoProductos = () => {
         </Paper>
       ) : (
         <Grid container spacing={3}>
-          {filtered.map((producto, index) => (
+          {filtered.map((producto) => (
             <ProductCard
               key={producto.id}
               producto={producto}

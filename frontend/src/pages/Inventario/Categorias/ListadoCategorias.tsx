@@ -14,9 +14,7 @@ import {
   Chip,
   Tooltip,
   CircularProgress,
-  Menu,
-  MenuItem,
-  Fade,
+  
   Zoom,
   useTheme,
   alpha,
@@ -24,9 +22,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
+  
   Alert,
 } from '@mui/material'
 import {
@@ -34,13 +30,12 @@ import {
   Search,
   Edit,
   Delete,
-  Visibility,
-  MoreVert,
+  
   Add,
   Close,
   CheckCircle,
   Inventory,
-  LocalOffer,
+  
   TrendingUp,
   HealthAndSafety,
   Spa,
@@ -52,10 +47,21 @@ import {
   ChildCare,
   Pets,
   SportsSoccer,
+  Build,
+  Engineering,
+  Devices,
+  Computer,
+  Memory,
+  Bolt,
+  Checkroom,
+  ShoppingBag,
+  LocalBar,
+  Fastfood,
+  BakeryDining,
+  LocalMall,
 } from '@mui/icons-material'
 import { categoriaService } from '../../../services/categoriaService'
 import { Categoria } from '../../../types/categoria.types'
-import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
 // Colores predefinidos para categorías
@@ -70,6 +76,14 @@ const coloresCategoria = [
   { nombre: 'Cobre', valor: '#f97316' },
   { nombre: 'Onyx', valor: '#374151' },
   { nombre: 'Humo', valor: '#4b5563' },
+  { nombre: 'Cielo', valor: '#0ea5e9' },
+  { nombre: 'Menta', valor: '#22c55e' },
+  { nombre: 'Magenta', valor: '#d946ef' },
+  { nombre: 'Pera', valor: '#84cc16' },
+  { nombre: 'Sandía', valor: '#ec4899' },
+  { nombre: 'Azul Profundo', valor: '#1e3a8a' },
+  { nombre: 'Coral', valor: '#fb7185' },
+  { nombre: 'Verde Oliva', valor: '#4d7c0f' },
 ]
 
 // Íconos predefinidos
@@ -84,6 +98,18 @@ const iconosCategoria = [
   { nombre: 'Bebé', icono: 'ChildCare' },
   { nombre: 'Mascotas', icono: 'Pets' },
   { nombre: 'Deportes', icono: 'SportsSoccer' },
+  { nombre: 'Ferretería', icono: 'Build' },
+  { nombre: 'Herramientas', icono: 'Engineering' },
+  { nombre: 'Tecnología', icono: 'Devices' },
+  { nombre: 'Computadoras', icono: 'Computer' },
+  { nombre: 'Componentes', icono: 'Memory' },
+  { nombre: 'Electrónica', icono: 'Bolt' },
+  { nombre: 'Ropa', icono: 'Checkroom' },
+  { nombre: 'Calzado', icono: 'ShoppingBag' },
+  { nombre: 'Licorería', icono: 'LocalBar' },
+  { nombre: 'Comidas', icono: 'Fastfood' },
+  { nombre: 'Panadería', icono: 'BakeryDining' },
+  { nombre: 'Retail', icono: 'LocalMall' },
 ]
 
 const iconosMap: Record<string, JSX.Element> = {
@@ -97,6 +123,18 @@ const iconosMap: Record<string, JSX.Element> = {
   ChildCare: <ChildCare fontSize="small" />,
   Pets: <Pets fontSize="small" />,
   SportsSoccer: <SportsSoccer fontSize="small" />,
+  Build: <Build fontSize="small" />,
+  Engineering: <Engineering fontSize="small" />,
+  Devices: <Devices fontSize="small" />,
+  Computer: <Computer fontSize="small" />,
+  Memory: <Memory fontSize="small" />,
+  Bolt: <Bolt fontSize="small" />,
+  Checkroom: <Checkroom fontSize="small" />,
+  ShoppingBag: <ShoppingBag fontSize="small" />,
+  LocalBar: <LocalBar fontSize="small" />,
+  Fastfood: <Fastfood fontSize="small" />,
+  BakeryDining: <BakeryDining fontSize="small" />,
+  LocalMall: <LocalMall fontSize="small" />,
 }
 
 const renderCategoriaIcon = (icono: string) => {
@@ -149,7 +187,7 @@ const StatCard = ({ title, value, icon, color, delay = 0 }: any) => {
 // Componente de tarjeta de categoría
 const CategoriaCard = ({ categoria, onEdit, onDelete }: any) => {
   const theme = useTheme()
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  
 
   return (
     <Grid item xs={12} sm={6} md={4} lg={3}>
@@ -241,7 +279,6 @@ const CategoriaCard = ({ categoria, onEdit, onDelete }: any) => {
 
 export const ListadoCategorias = () => {
   const theme = useTheme()
-  const navigate = useNavigate()
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [filtered, setFiltered] = useState<Categoria[]>([])
   const [loading, setLoading] = useState(true)

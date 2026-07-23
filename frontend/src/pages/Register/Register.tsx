@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import {
   Container,
@@ -16,8 +16,6 @@ import {
   Alert,
   Grid,
   CircularProgress,
-  useTheme,
-  alpha,
 } from '@mui/material'
 import {
   Visibility,
@@ -32,7 +30,6 @@ import {
   Person,
   Phone,
   LocationCity,
-  FilePresent,
 } from '@mui/icons-material'
 import { useAuth } from '../../contexts/AuthContext'
 import { motion } from 'framer-motion'
@@ -42,7 +39,6 @@ const registerBg = new URL('../../assets/images/login1.png', import.meta.url).hr
 
 export const Register = () => {
   const navigate = useNavigate()
-  const theme = useTheme()
   const { enqueueSnackbar } = useSnackbar()
   const { register, signInWithGoogle, signInWithFacebook } = useAuth()
   const [showPassword, setShowPassword] = useState(false)

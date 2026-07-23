@@ -10,23 +10,16 @@ import {
   IconButton,
   Button,
   Chip,
-  Tooltip,
-  CircularProgress,
   useTheme,
   alpha,
   TextField,
-  InputAdornment,
   Menu,
   MenuItem,
-  Fade,
-  Zoom,
-  Divider,
-  Tabs,
-  Tab,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
+  Divider,
+  Zoom,
 } from '@mui/material'
 import {
   Assessment,
@@ -42,18 +35,11 @@ import {
   Category,
   LocalShipping,
   Close,
-  FilterList,
   DateRange,
-  WhatsApp,
-  Email,
   Receipt,
 } from '@mui/icons-material'
 import { ventaService } from '../../services/ventaService'
 import { Venta } from '../../types/venta.types'
-import { productoService } from '../../services/productoService'
-import { clienteService } from '../../services/clienteService'
-import { motion } from 'framer-motion'
-import { LoadingScreen } from '../../components/Common/LoadingScreen'
 import { SkeletonTable, SkeletonDashboardGrid } from '../../components/Common/SkeletonTable'
 import {
   LineChart,
@@ -70,7 +56,6 @@ import {
   CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts'
 
 // Componente de tarjeta de estadística
@@ -130,7 +115,6 @@ const metodoPagoColores: Record<string, string> = {
 
 export const ReporteVentas = () => {
   const theme = useTheme()
-  const [ventas, setVentas] = useState<Venta[]>([])
   const [loading, setLoading] = useState(true)
   const [fechaInicio, setFechaInicio] = useState(() => {
     const date = new Date()
@@ -138,7 +122,6 @@ export const ReporteVentas = () => {
     return date.toISOString().split('T')[0]
   })
   const [fechaFin, setFechaFin] = useState(() => new Date().toISOString().split('T')[0])
-  const [tipoReporte, setTipoReporte] = useState(0)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [openExportDialog, setOpenExportDialog] = useState(false)
 
@@ -160,7 +143,6 @@ export const ReporteVentas = () => {
   useEffect(() => {
     const unsubscribe = ventaService.subscribeAll((data) => {
       const ventasFiltradas = data.filter(v => v.fecha >= fechaInicio && v.fecha <= fechaFin)
-      setVentas(ventasFiltradas)
       procesarDatos(ventasFiltradas)
       setLoading(false)
     }, console.error)

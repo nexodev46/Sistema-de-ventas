@@ -106,10 +106,6 @@ export const NuevaDevolucion = () => {
     }))
   }
 
-  const handleMotivoProducto = (id: string, text: string) => {
-    setProductosDevueltos(prev => prev.map(item => item.id === id ? { ...item, motivo: text } : item))
-  }
-
   const total = productosDevueltos.reduce((sum, item) => sum + item.subtotal, 0)
 
   const handleSubmit = async () => {

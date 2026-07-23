@@ -9,6 +9,7 @@ export interface Cliente {
   fechaNacimiento: string
   fechaRegistro: string
   totalCompras: number
+  totalGastado: number
   ultimaCompra: string
   notas: string
   activo: boolean

@@ -12,7 +12,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore'
 import { db } from './firebase'
-import { Devolucion, DevolucionFormData } from '../types/devolucion.types'
+import { Devolucion } from '../types/devolucion.types'
 
 const COLLECTION_NAME = 'devoluciones'
 

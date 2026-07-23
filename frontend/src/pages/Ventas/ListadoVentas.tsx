@@ -13,7 +13,6 @@ import {
   Button,
   Chip,
   Tooltip,
-  CircularProgress,
   MenuItem,
   Zoom,
   useTheme,
@@ -322,8 +321,6 @@ export const ListadoVentas = () => {
     setFiltered(result)
     setPage(0)
   }
-
-  const handleView = (id: string) => navigate(`/ventas/${id}`)
 
   const handlePrint = (_venta: Venta) => {
     if (!configuracionFactura) {

@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
-  Paper,
   Grid,
   Card,
   CardContent,
@@ -23,7 +22,6 @@ import {
   DialogContent,
   DialogActions,
   Switch,
-  FormControlLabel,
   List,
   ListItem,
   ListItemIcon,
@@ -37,26 +35,21 @@ import {
   TableRow,
 } from '@mui/material'
 import {
-  Security,
-  Lock,
+  
   Visibility,
   VisibilityOff,
-  CheckCircle,
   Close,
-  Phone,
   Email,
   Computer,
   Smartphone,
   Laptop,
-  Watch,
   LocationOn,
   AccessTime,
   VerifiedUser,
   Shield,
   Key,
   Fingerprint,
-  QrCode,
-  Warning,
+  Lock,
 } from '@mui/icons-material'
 import { useAuth } from '../../contexts/AuthContext'
 import { auth, db } from '../../services/firebase'
@@ -67,7 +60,6 @@ import { motion } from 'framer-motion'
 
 // Componente de tarjeta de estadística
 const StatCard = ({ title, value, icon, color, delay = 0 }: any) => {
-  const theme = useTheme()
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -147,7 +139,7 @@ export const Seguridad = () => {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [openChangePassword, setOpenChangePassword] = useState(false)
-  const [open2FADialog, setOpen2FADialog] = useState(false)
+  
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -176,7 +168,7 @@ export const Seguridad = () => {
     const uid = user?.id || auth.currentUser?.uid
     if (!uid) return
 
-    const userRef = doc(db, 'usuarios', uid)
+    
     const sesionesRef = collection(db, 'usuarios', uid, 'sesiones')
     const historialRef = collection(db, 'usuarios', uid, 'historial')
     const sesionesQuery = query(sesionesRef, orderBy('ultimoAcceso', 'desc'))

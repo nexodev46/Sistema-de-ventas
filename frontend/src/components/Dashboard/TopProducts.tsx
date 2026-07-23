@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, CardContent, Typography, Box, List, ListItem, ListItemText, Divider, Skeleton, Avatar, useTheme } from '@mui/material'
+import { Card, CardContent, Typography, List, ListItem, ListItemText, Skeleton, Avatar, useTheme } from '@mui/material'
 
 export const TopProducts: React.FC<{ products: any[]; loading?: boolean }> = ({ products, loading }) => {
   const theme = useTheme()

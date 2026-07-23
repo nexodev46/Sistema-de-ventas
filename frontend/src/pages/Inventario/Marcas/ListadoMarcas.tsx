@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -23,7 +23,7 @@ import {
   Tabs,
   Tab,
   Divider,
-  Fade,
+  
   Zoom,
 } from '@mui/material'
 import {
@@ -36,10 +36,7 @@ import {
   CheckCircle,
   Inventory,
   TrendingUp,
-  Image,
-  Upload,
-  Star,
-  Business,
+  
 } from '@mui/icons-material'
 import { marcaService } from '../../../services/marcaService'
 import { cloudinaryService } from '../../../services/cloudinaryService'

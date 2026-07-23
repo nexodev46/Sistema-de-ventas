@@ -19,7 +19,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  IconButton as MuiIconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -31,9 +30,6 @@ import {
   Alert,
   useTheme,
   alpha,
-  Fade,
-  Zoom,
-  Avatar,
   Tabs,
   Tab,
 } from '@mui/material'
@@ -46,15 +42,11 @@ import {
   Payment,
   Close,
   CheckCircle,
-  Print,
   Receipt,
-  LocalOffer,
   Person,
   QrCode,
   AttachMoney,
   CreditCard,
-  WhatsApp,
-  Email,
 } from '@mui/icons-material'
 import { productoService } from '../../services/productoService'
 import { clienteService } from '../../services/clienteService'
@@ -63,7 +55,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { Producto } from '../../types/producto.types'
 import { Cliente } from '../../types/cliente.types'
 import { isValidImageUrl } from '../../utils/validators'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 interface ProductoVenta {
   id: string
@@ -245,6 +237,18 @@ export const PuntoVenta = () => {
 
       await ventaService.create(ventaData)
 
+      if (cliente && cliente.id !== 'general') {
+        try {
+          await clienteService.update(cliente.id, {
+            totalCompras: (cliente.totalCompras || 0) + 1,
+            totalGastado: (cliente.totalGastado || 0) + total,
+            ultimaCompra: fecha.toISOString().split('T')[0],
+          } as any)
+        } catch (error) {
+          console.error('Error actualizando cliente tras la venta:', error)
+        }
+      }
+
       for (const item of carrito) {
         await productoService.updateStock(item.id, item.cantidad, 'decrementar')
       }
@@ -264,12 +268,6 @@ export const PuntoVenta = () => {
       setLoading(false)
     }
   }
-
-  const handleImprimirTicket = () => {
-    window.print()
-  }
-
-  const clienteSeleccionado = clientes.find(c => c.id === cliente?.id)
 
   return (
     <Box>

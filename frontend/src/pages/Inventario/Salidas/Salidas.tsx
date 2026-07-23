@@ -22,7 +22,6 @@ import {
   Step,
   StepLabel,
   Fade,
-  Zoom,
   useTheme,
   alpha,
   LinearProgress,
@@ -49,9 +48,7 @@ import { motion } from 'framer-motion'
 
 // Componente de tarjeta de resumen
 const SummaryCard = ({ title, value, icon, color, prefix = '', suffix = '' }: any) => {
-  const theme = useTheme()
   return (
-    <Zoom in>
       <Card sx={{ borderRadius: 2, bgcolor: alpha(color, 0.1), borderLeft: 4, borderColor: color }}>
         <CardContent sx={{ py: 1.5 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -63,7 +60,6 @@ const SummaryCard = ({ title, value, icon, color, prefix = '', suffix = '' }: an
           </Box>
         </CardContent>
       </Card>
-    </Zoom>
   )
 }
 

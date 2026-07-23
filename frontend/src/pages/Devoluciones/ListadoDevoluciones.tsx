@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -50,6 +50,8 @@ import {
   Download,
   PictureAsPdf,
 } from '@mui/icons-material'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
 import { devolucionService } from '../../services/devolucionService'
 import { Devolucion } from '../../types/devolucion.types'
 import { useNavigate } from 'react-router-dom'
@@ -269,6 +271,97 @@ export const ListadoDevoluciones = () => {
     setDevolucionToDelete(null)
   }
 
+  const handleExportExcel = () => {
+    try {
+      const dataExcel = filtered.map((devolucion) => ({
+        'N° Devolución': devolucion.numero,
+        Fecha: devolucion.fecha,
+        Hora: devolucion.hora,
+        Cliente: devolucion.cliente.nombre,
+        Documento: devolucion.cliente.documento,
+        'Venta Original': devolucion.ventaOriginal.numero,
+        'Fecha Venta': devolucion.ventaOriginal.fecha,
+        Monto: devolucion.subtotal,
+        Estado: getEstadoLabel(devolucion.estado),
+        'Tipo Devolución': devolucion.tipoDevolucion,
+        'Método Reembolso': devolucion.metodoReembolso,
+        'Motivo General': devolucion.motivoGeneral,
+        Observaciones: devolucion.observaciones,
+        'Creado Por': devolucion.creadoPor.nombre,
+        'Creado En': devolucion.creadoEn,
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(dataExcel)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Devoluciones')
+      const nombreArchivo = `Devoluciones_${new Date().toISOString().slice(0, 10)}.xlsx`
+      XLSX.writeFile(workbook, nombreArchivo)
+    } catch (error) {
+      console.error('Error exportando devoluciones a Excel:', error)
+      alert('No se pudo exportar la lista de devoluciones a Excel. Revisa la consola para más detalles.')
+    }
+  }
+
+  const handleExportPDF = () => {
+    try {
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
+      const headers = ['N° Devolución', 'Fecha', 'Hora', 'Cliente', 'Documento', 'Venta', 'Monto', 'Estado']
+      const rows = filtered.map((devolucion) => [
+        devolucion.numero,
+        devolucion.fecha,
+        devolucion.hora,
+        devolucion.cliente.nombre,
+        devolucion.cliente.documento,
+        devolucion.ventaOriginal.numero,
+        `S/ ${devolucion.subtotal.toFixed(2)}`,
+        getEstadoLabel(devolucion.estado),
+      ])
+
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const margin = 40
+      const startY = 60
+      const rowHeight = 18
+      let y = startY
+
+      doc.setFontSize(14)
+      doc.text('Listado de devoluciones', pageWidth / 2, 30, { align: 'center' })
+      doc.setFontSize(10)
+
+      const columnWidths = [100, 70, 50, 130, 90, 90, 70, 80]
+
+      const drawRow = (row: string[], isHeader = false) => {
+        let x = margin
+        row.forEach((cell, index) => {
+          if (isHeader) {
+            doc.setFont('helvetica', 'bold')
+          } else {
+            doc.setFont('helvetica', 'normal')
+          }
+          doc.text(String(cell || ''), x, y)
+          x += columnWidths[index]
+        })
+        y += rowHeight
+      }
+
+      drawRow(headers, true)
+      doc.line(margin, y - 12, pageWidth - margin, y - 12)
+
+      rows.forEach((row) => {
+        if (y > doc.internal.pageSize.getHeight() - 40) {
+          doc.addPage()
+          y = startY
+        }
+        drawRow(row)
+      })
+
+      const nombreArchivo = `Devoluciones_${new Date().toISOString().slice(0, 10)}.pdf`
+      doc.save(nombreArchivo)
+    } catch (error) {
+      console.error('Error exportando devoluciones a PDF:', error)
+      alert('No se pudo exportar la lista de devoluciones a PDF. Revisa la consola para más detalles.')
+    }
+  }
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
@@ -353,8 +446,8 @@ export const ListadoDevoluciones = () => {
           <Button variant="outlined" startIcon={<FilterList />} onClick={() => setOpenFilterDialog(true)}>
             Filtrar
           </Button>
-          <Button variant="outlined" startIcon={<PictureAsPdf />}>PDF</Button>
-          <Button variant="outlined" startIcon={<Download />}>Excel</Button>
+          <Button variant="outlined" startIcon={<PictureAsPdf />} onClick={handleExportPDF}>PDF</Button>
+          <Button variant="outlined" startIcon={<Download />} onClick={handleExportExcel}>Excel</Button>
         </Box>
       </Paper>
 
@@ -405,7 +498,7 @@ export const ListadoDevoluciones = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((devolucion, idx) => (
+                filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((devolucion) => (
                   <TableRow key={devolucion.id} hover>
                     <TableCell>
                       <Chip label={devolucion.numero} size="small" variant="outlined" />

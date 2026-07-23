@@ -22,7 +22,6 @@ import {
   alpha,
   Avatar,
   Card,
-  CardContent,
 } from '@mui/material'
 import {
   Save,
@@ -152,11 +151,11 @@ export const FormularioCliente = () => {
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 4, borderRadius: 3 }}>
             <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-              {steps.map((label, index) => (
-                <Step key={label}>
-                  <StepLabel>{label}</StepLabel>
-                </Step>
-              ))}
+              {steps.map((label) => (
+                  <Step key={label}>
+                    <StepLabel>{label}</StepLabel>
+                  </Step>
+                ))}
             </Stepper>
 
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}

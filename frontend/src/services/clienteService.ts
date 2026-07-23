@@ -74,6 +74,7 @@ export const clienteService = {
       const clienteData = {
         ...data,
         totalCompras: 0,
+        totalGastado: 0,
         ultimaCompra: '',
         fechaRegistro: now,
         activo: true,
@@ -87,7 +88,7 @@ export const clienteService = {
   },
 
   // Actualizar cliente
-  update: async (id: string, data: Partial<ClienteFormData>): Promise<void> => {
+  update: async (id: string, data: Partial<Omit<Cliente, 'id'>>): Promise<void> => {
     try {
       const docRef = doc(db, COLLECTION_NAME, id)
       await updateDoc(docRef, data)
@@ -95,6 +96,18 @@ export const clienteService = {
       console.error('Error actualizando cliente:', error)
       throw error
     }
+  },
+
+  subscribeById: (id: string, callback: (cliente: Cliente | null) => void, errorCallback?: (error: Error) => void) => {
+    const docRef = doc(db, COLLECTION_NAME, id)
+    return onSnapshot(
+      docRef,
+      (snapshot) => callback(snapshot.exists() ? ({ id: snapshot.id, ...snapshot.data() } as Cliente) : null),
+      (error) => {
+        if (errorCallback) errorCallback(error)
+        else console.error('Error en la suscripción del cliente:', error)
+      }
+    )
   },
 
   // Eliminar cliente (soft delete)

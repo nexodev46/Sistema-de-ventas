@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -15,7 +15,6 @@ import {
   useTheme,
   alpha,
   TextField,
-  InputAdornment,
   Divider,
   Alert,
   Dialog,
@@ -24,33 +23,28 @@ import {
   DialogActions,
   Tab,
   Tabs,
-  Fade,
-  Zoom,
-  Badge,
+  
 } from '@mui/material'
 import {
-  Person,
   Save,
   Edit,
   Email,
   Phone,
   Badge as BadgeIcon,
-  Lock,
   Logout,
   PhotoCamera,
-  CheckCircle,
   Close,
   Security,
   VerifiedUser,
-  CalendarToday,
+  
   LocationOn,
 } from '@mui/icons-material'
 import { useAuth } from '../../contexts/AuthContext'
 import { auth, db } from '../../services/firebase'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { updateProfile, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
+import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { useSnackbar } from 'notistack'
-import { motion } from 'framer-motion'
+// motion removed (unused)
 import { cloudinaryService } from '../../services/cloudinaryService'
 
 interface TabPanelProps {
@@ -70,7 +64,7 @@ const TabPanel = (props: TabPanelProps) => {
 
 export const MiPerfil = () => {
   const theme = useTheme()
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
   const { enqueueSnackbar } = useSnackbar()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

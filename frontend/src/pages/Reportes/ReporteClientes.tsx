@@ -9,57 +9,40 @@ import {
   Avatar,
   IconButton,
   Button,
-  Chip,
-  Tooltip,
-  CircularProgress,
   useTheme,
   alpha,
-  TextField,
-  InputAdornment,
-  Menu,
-  MenuItem,
-  Fade,
   Zoom,
   Divider,
-  Tabs,
-  Tab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from '@mui/material'
 import {
   People,
-  Download,
   PictureAsPdf,
   Print,
-  Search,
   TrendingUp,
   TrendingDown,
   Star,
-  StarBorder,
   AttachMoney,
-  CalendarToday,
   Close,
   Assessment,
   PieChart as PieChartIcon,
   Timeline,
-  Email,
-  Phone,
-  LocationOn,
   Receipt,
+  Download,
 } from '@mui/icons-material'
 import { clienteService } from '../../services/clienteService'
 import { ventaService } from '../../services/ventaService'
 import { Cliente } from '../../types/cliente.types'
 import { Venta } from '../../types/venta.types'
-import { motion } from 'framer-motion'
+// framer-motion removed (not used)
 import { SkeletonTable, SkeletonDashboardGrid } from '../../components/Common/SkeletonTable'
 import {
   BarChart,
@@ -124,15 +107,12 @@ const StatCard = ({ title, value, icon, color, prefix = '', suffix = '', trend =
   )
 }
 
-const coloresClientes = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316']
-
 export const ReporteClientes = () => {
   const theme = useTheme()
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [ventas, setVentas] = useState<Venta[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [tabValue, setTabValue] = useState(0)
+  
   const [openExportDialog, setOpenExportDialog] = useState(false)
 
   // Datos para gráficos
@@ -292,11 +272,7 @@ export const ReporteClientes = () => {
     setOpenExportDialog(false)
   }
 
-  const clientesFiltrados = clientes.filter(c =>
-    c.nombre.toLowerCase().includes(search.toLowerCase()) ||
-    c.email.toLowerCase().includes(search.toLowerCase()) ||
-    c.documento.includes(search)
-  )
+  // clientesFiltrados removed (not referenced)
 
   if (loading) {
     return (

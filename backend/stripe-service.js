@@ -1,4 +1,8 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy')
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+if (!stripeSecretKey) {
+  throw new Error('STRIPE_SECRET_KEY is required for Stripe payments')
+}
+const stripe = require('stripe')(stripeSecretKey)
 
 // Crear suscripción de cliente
 async function createSubscription(email, priceId) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -25,8 +25,7 @@ import {
   Zoom,
   useTheme,
   alpha,
-  IconButton,
-  Tooltip,
+  
 } from '@mui/material'
 import {
   Save,
@@ -35,7 +34,7 @@ import {
   Add,
   CheckCircle,
   LocalShipping,
-  Person,
+  
   Note,
   Refresh,
   Receipt,
@@ -49,7 +48,6 @@ import { motion } from 'framer-motion'
 
 // Componente de tarjeta de resumen
 const SummaryCard = ({ title, value, icon, color, prefix = '' }: any) => {
-  const theme = useTheme()
   return (
     <Zoom in>
       <Card sx={{ borderRadius: 2, bgcolor: alpha(color, 0.1), borderLeft: 4, borderColor: color }}>

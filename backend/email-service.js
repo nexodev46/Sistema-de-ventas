@@ -1,12 +1,29 @@
 const nodemailer = require('nodemailer')
 
+const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com'
+const smtpPort = Number(process.env.SMTP_PORT || 465)
+const smtpUser = process.env.SMTP_USER
+const smtpPass = process.env.SMTP_PASS
+const supportEmail = process.env.SUPPORT_EMAIL
+
+if (process.env.NODE_ENV === 'production') {
+  if (!smtpUser || !smtpPass) {
+    console.error('SMTP_USER and SMTP_PASS must be set in production for email delivery.')
+    process.exit(1)
+  }
+  if (!supportEmail) {
+    console.error('SUPPORT_EMAIL must be set in production for support emails.')
+    process.exit(1)
+  }
+}
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: process.env.SMTP_PORT || 465,
+  host: smtpHost,
+  port: smtpPort,
   secure: true,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
+    user: smtpUser,
+    pass: smtpPass
   }
 })
 
@@ -15,8 +32,8 @@ async function sendSupportEmail(name, email, message, subject = 'Nuevo Mensaje d
   try {
     // Email al equipo de soporte
     await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: process.env.SUPPORT_EMAIL || 'soporte@tu-empresa.com',
+      from: smtpUser,
+      to: supportEmail || 'soporte@tu-empresa.com',
       subject: `[SOPORTE] ${subject}`,
       html: `
         <h2>Nuevo Mensaje de Soporte</h2>

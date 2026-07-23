@@ -1,5 +1,4 @@
-import React from 'react'
-import { Box, Typography, Grid, Card, CardContent, CardActionArea, Avatar, useTheme, alpha } from '@mui/material'
+import { Box, Typography, Grid, Card, CardActionArea, Avatar, useTheme, alpha } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -10,8 +9,7 @@ import {
   Palette,
   Receipt,
   Person,
-  AdminPanelSettings,
-  Storefront,
+  
   LocalShipping,
 } from '@mui/icons-material'
 

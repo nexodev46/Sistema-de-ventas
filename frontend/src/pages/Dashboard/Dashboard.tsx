@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Box,
   Typography,
@@ -22,10 +22,7 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Fade,
   Zoom,
-  Select,
-  MenuItem,
   TextField,
   InputAdornment,
 } from '@mui/material'
@@ -35,16 +32,11 @@ import {
   AttachMoney,
   ShoppingCart,
   People,
-  Inventory,
+  Store,
   Warning,
   Receipt,
-  MoreVert,
   Refresh,
   CalendarToday,
-  ArrowUpward,
-  ArrowDownward,
-  Store,
-  LocalShipping,
   CheckCircle,
   Schedule,
   AccessTime,
@@ -59,7 +51,7 @@ import { Producto } from '../../types/producto.types'
 import { Venta } from '../../types/venta.types'
 import { Cliente } from '../../types/cliente.types'
 import { useAuth } from '../../contexts/AuthContext'
-import { motion } from 'framer-motion'
+
 import {
   LineChart,
   Line,
@@ -79,7 +71,6 @@ import {
 } from 'recharts'
 
 // Colores para gráficos
-const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316']
 
 // Componente de tarjeta de estadística
 const StatCard = ({ title, value, icon, color, prefix = '', suffix = '', trend = null, loading = false }: any) => {
@@ -147,7 +138,7 @@ const metodoPagoColores: Record<string, string> = {
 }
 
 // Componente de Skeleton
-const Skeleton = ({ variant, width, height }: any) => (
+const Skeleton = ({ width, height }: any) => (
   <Box sx={{ bgcolor: 'action.hover', borderRadius: 1, width, height, display: 'inline-block' }} />
 )
 
@@ -171,8 +162,6 @@ export const Dashboard = () => {
   // Datos para gráficos
   const [ventasPorDia, setVentasPorDia] = useState<any[]>([])
   const [selectedRange, setSelectedRange] = useState<'7d' | '30d' | '12m'>('7d')
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth())
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
   const [ventasPorHora, setVentasPorHora] = useState<any[]>([])
   const [ventasPorMetodo, setVentasPorMetodo] = useState<any[]>([])
   const [ventasPorSemana, setVentasPorSemana] = useState<any[]>([])
@@ -190,7 +179,7 @@ export const Dashboard = () => {
     ticketPromedio: 0, crecimientoVentas: 12.5,
   })
 
-  const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+  
   const headerDate = (() => {
     const [year, month, day] = headerDateValue.split('-').map(Number)
     return new Date(year, month - 1, day).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -226,16 +215,6 @@ export const Dashboard = () => {
         return fecha.getMonth() === month && fecha.getFullYear() === year
       }).reduce((sum, v) => sum + v.total, 0)
       return { fecha: date.toLocaleDateString('es', { month: 'short', year: '2-digit' }), total: totalMes }
-    })
-  }
-
-  const getVentasPorDiaMes = (month: number, year: number) => {
-    const daysInMonth = new Date(year, month + 1, 0).getDate()
-    return Array.from({ length: daysInMonth }, (_, index) => {
-      const date = new Date(year, month, index + 1)
-      const fechaStr = date.toISOString().split('T')[0]
-      const totalDia = ventas.filter(v => v.fecha === fechaStr).reduce((sum, v) => sum + v.total, 0)
-      return { fecha: date.toLocaleDateString('es', { day: 'numeric' }), total: totalDia }
     })
   }
 
@@ -381,7 +360,7 @@ export const Dashboard = () => {
     } else {
       setVentasPorDia(getVentasUltimos12Meses())
     }
-  }, [ventas, selectedRange, selectedMonth, selectedYear])
+  }, [ventas, selectedRange])
 
   const cargarDatos = async () => {
     setLoading(true)
